@@ -1,0 +1,40 @@
+const { pool } = require("../../../config/database");
+const { logger } = require("../../../config/winston");
+
+const roomsDao = require("./roomsDao");
+
+// Provider: Read 비즈니스 로직 처리
+
+exports.retrieveRoomsList = async function () {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const roomsListResult = await roomsDao.selectRooms(connection);
+    connection.release();
+
+    return roomsListResult;
+
+};
+exports.retrieveRoom = async function (name) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const roomResult = await roomsDao.selectRoomsByName(connection, name);
+
+  connection.release();
+
+  return roomResult[0];
+};
+
+exports.hostIdCheck = async function (hostId) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const hostIdCheckResult = await roomsDao.selectUserStatus(connection, hostId);
+  connection.release();
+
+  return hostIdCheckResult;
+};
+
+exports.nameCheck = async function (name) {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const nameCheckResult = await roomsDao.selectRoomsName(connection, name);
+    connection.release();
+
+    return nameCheckResult;
+};
+

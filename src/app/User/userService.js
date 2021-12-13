@@ -13,20 +13,19 @@ const {connect} = require("http2");
 
 // Service: Create, Update, Delete 비즈니스 로직 처리
 
-exports.createUser = async function (email, password, nickname) {
+exports.createUser = async function (user_email, password, name, sex, phonenum, birth, status) {
     try {
         // 이메일 중복 확인
-        const emailRows = await userProvider.emailCheck(email);
-        if (emailRows.length > 0)
+        const user_emailRows = await userProvider.user_emailCheck(user_email);
+        if (user_emailRows.length > 0)
             return errResponse(baseResponse.SIGNUP_REDUNDANT_EMAIL);
-
         // 비밀번호 암호화
         const hashedPassword = await crypto
             .createHash("sha512")
             .update(password)
             .digest("hex");
-
-        const insertUserInfoParams = [email, hashedPassword, nickname];
+        
+        const insertUserInfoParams = [user_email, password, name, sex, phonenum, birth, status];
 
         const connection = await pool.getConnection(async (conn) => conn);
 
@@ -44,13 +43,13 @@ exports.createUser = async function (email, password, nickname) {
 
 
 // TODO: After 로그인 인증 방법 (JWT)
-exports.postSignIn = async function (email, password) {
+exports.postSignIn = async function (user_email, password, name, sex, phonenum, birth, status) {
     try {
         // 이메일 여부 확인
-        const emailRows = await userProvider.emailCheck(email);
-        if (emailRows.length < 1) return errResponse(baseResponse.SIGNIN_EMAIL_WRONG);
+        const user_emailRows = await userProvider.user_emailCheck(user_email);
+        if (user_emailRows.length < 1) return errResponse(baseResponse.SIGNIN_user_email_WRONG);
 
-        const selectEmail = emailRows[0].email
+        const selectuser_email = user_emailRows[0].user_email
 
         // 비밀번호 확인
         const hashedPassword = await crypto
@@ -58,7 +57,7 @@ exports.postSignIn = async function (email, password) {
             .update(password)
             .digest("hex");
 
-        const selectUserPasswordParams = [selectEmail, hashedPassword];
+        const selectUserPasswordParams = [selectuser_email, hashedPassword];
         const passwordRows = await userProvider.passwordCheck(selectUserPasswordParams);
 
         if (passwordRows[0].password !== hashedPassword) {
@@ -66,7 +65,7 @@ exports.postSignIn = async function (email, password) {
         }
 
         // 계정 상태 확인
-        const userInfoRows = await userProvider.accountCheck(email);
+        const userInfoRows = await userProvider.accountCheck(user_email);
 
         if (userInfoRows[0].status === "INACTIVE") {
             return errResponse(baseResponse.SIGNIN_INACTIVE_ACCOUNT);

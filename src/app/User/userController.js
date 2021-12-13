@@ -4,7 +4,7 @@ const userService = require("../../app/User/userService");
 const baseResponse = require("../../../config/baseResponseStatus");
 const {response, errResponse} = require("../../../config/response");
 
-const regexEmail = require("regex-email");
+const regexuser_email = require("regex-email");
 const {emit} = require("nodemon");
 
 /**
@@ -34,29 +34,26 @@ const {emit} = require("nodemon");
 exports.postUsers = async function (req, res) {
 
     /**
-     * Body: email, password, nickname
+     * Body: user_email, password, name, sex, phonenum, birth, status
      */
-    console.log("통과");
-    const {email, password, nickname} = req.body;
+    const {user_email, password, name, sex, phonenum, birth, status} = req.body;
 
     // 빈 값 체크
-    if (!email)
-        return res.send(response(baseResponse.SIGNUP_EMAIL_EMPTY));
+    if (!user_email)
+        return res.send(response(baseResponse.SIGNUP_user_email_EMPTY));
 
     // 길이 체크
-    if (email.length > 30)
-        return res.send(response(baseResponse.SIGNUP_EMAIL_LENGTH));
+    if (user_email.length > 30)
+        return res.send(response(baseResponse.SIGNUP_user_email_LENGTH));
 
     // 형식 체크 (by 정규표현식)
-    if (!regexEmail.test(email))
-        return res.send(response(baseResponse.SIGNUP_EMAIL_ERROR_TYPE));
+    if (!regexuser_email.test(user_email))
+        return res.send(response(baseResponse.SIGNUP_user_email_ERROR_TYPE));
 
     // 기타 등등 - 추가하기
    
     const signUpResponse = await userService.createUser(
-        email,
-        password,
-        nickname
+        user_email, password, name, sex, phonenum, birth, status
     );
     return res.send(signUpResponse);
 };
@@ -69,18 +66,18 @@ exports.postUsers = async function (req, res) {
 exports.getUsers = async function (req, res) {
 
     /**
-     * Query String: email
+     * Query String: user_email
      */
-    const email = req.query.email;
+    const user_email = req.query.user_email;
 
-    if (!email) {
+    if (!user_email) {
         // 유저 전체 조회
         const userListResult = await userProvider.retrieveUserList();
         return res.send(response(baseResponse.SUCCESS, userListResult));
     } else {
         // 유저 검색 조회
-        const userListByEmail = await userProvider.retrieveUserList(email);
-        return res.send(response(baseResponse.SUCCESS, userListByEmail));
+        const userListByuser_email = await userProvider.retrieveUserList(user_email);
+        return res.send(response(baseResponse.SUCCESS, userListByuser_email));
     }
 };
 
@@ -94,7 +91,7 @@ exports.getUserById = async function (req, res) {
     /**
      * Path Variable: userId
      */
-    const userId = req.params.userId;
+    const userId = req.query.userId;
 
     if (!userId) return res.send(errResponse(baseResponse.USER_USERID_EMPTY));
 
@@ -108,15 +105,15 @@ exports.getUserById = async function (req, res) {
  * API No. 4
  * API Name : 로그인 API
  * [POST] /app/login
- * body : email, passsword
+ * body : user_email, passsword
  */
 exports.login = async function (req, res) {
 
-    const {email, password} = req.body;
+    const {user_email, password} = req.body;
 
-    // TODO: email, password 형식적 Validation
+    // TODO: user_email, password 형식적 Validation
 
-    const signInResponse = await userService.postSignIn(email, password);
+    const signInResponse = await userService.postSignIn(user_email, password);
 
     return res.send(signInResponse);
 };
