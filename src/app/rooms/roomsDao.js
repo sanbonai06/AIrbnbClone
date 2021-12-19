@@ -52,7 +52,6 @@ async function selectRooms(connection) {
     return rows[0];
   };
   */
-  // 유저 생성
   async function insertRoomsInfo(connection, insertRoomsInfoParams){
     const insertRoomsInfoQuery = `
           INSERT INTO Rooms(host_id, room_name, room_address, room_latitude, room_longitude, room_price, room_wishes,
@@ -68,6 +67,20 @@ async function selectRooms(connection) {
     return insertRoomsInfoRow;
   }
   
+  async function selectRoomsByHostID(connection, hostId) {
+    const selectRoomsByHostIdQuery = `
+          SELECT  room_name, room_address, room_price, room_wishes, service_commission, tax_of_lodge, clean_up_cost,
+          room_description, check_in_time, check_out_time, Rooms.status, Users.user_name, Users.user_email
+          FROM Users, Rooms
+          WHERE Rooms.host_id = ? and Users.user_id = Rooms.host_id; 
+          `;
+        const selectRoomsRow = await connection.query(
+          selectRoomsByHostIdQuery,
+          hostId
+        );
+      
+      return selectRoomsRow;
+  }
   // 패스워드 체크
   /*async function selectUserPassword(connection, selectUserPasswordParams) {
     const selectUserPasswordQuery = `
@@ -104,6 +117,85 @@ async function selectRooms(connection) {
     return updateUserRow[0];
   }
   */
+  async function selectRoomsByRoomsId(connection, roomsId) {
+
+    const selectRoomsInfoQuery = `
+          SELECT  room_name, room_address, room_price, room_wishes, service_commission, tax_of_lodge, clean_up_cost,
+          room_description, check_in_time, check_out_time, Rooms.status, Users.user_name, Users.user_email, Rooms.host_id
+          FROM Users, Rooms
+          WHERE Rooms.room_id = ? and Users.user_id = Rooms.host_id; `;
+          
+          const selectRoomsRow = await connection.query(
+            selectRoomsInfoQuery,
+            roomsId
+          );
+        
+        return selectRoomsRow;
+
+  }
+
+  async function updateRoomsName(connection, id, name) {
+    const updateRoomQuery = `
+    UPDATE Rooms 
+    SET room_name = ?
+    WHERE room_id = ?;`;
+    const updateRoomRow = await connection.query(updateRoomQuery, [name, id]);
+    return updateRoomRow[0];
+  }
+  
+  async function updateRoomsAddr(connection, id, addr) {
+    const updateRoomQuery = `
+    UPDATE Rooms 
+    SET room_address = ?
+    WHERE room_id = ?;`;
+    const updateRoomRow = await connection.query(updateRoomQuery, [addr, id]);
+    return updateRoomRow[0];
+  }
+  
+  async function updateRoomsPrice(connection, id, price) {
+    const updateRoomQuery = `
+    UPDATE Rooms 
+    SET room_price = ?
+    WHERE room_id = ?;`;
+    const updateRoomRow = await connection.query(updateRoomQuery, [price, id]);
+    return updateRoomRow[0];
+  }
+  
+  async function updateRoomsCommission(connection, id, commission) {
+    const updateRoomQuery = `
+    UPDATE Rooms 
+    SET room_commission = ?
+    WHERE room_id = ?;`;
+    const updateRoomRow = await connection.query(updateRoomQuery, [commission, id]);
+    return updateRoomRow[0];
+  }
+  
+  async function updateRoomsCleanCost(connection, id, cleanCost) {
+    const updateRoomQuery = `
+    UPDATE Rooms 
+    SET clean_up_cost = ?
+    WHERE room_id = ?;`;
+    const updateRoomRow = await connection.query(updateRoomQuery, [cleanCost, id]);
+    return updateRoomRow[0];
+  }
+  
+  async function updateRoomsDescription(connection, id, descript) {
+    const updateRoomQuery = `
+    UPDATE Rooms 
+    SET room_description = ?
+    WHERE room_id = ?;`;
+    const updateRoomRow = await connection.query(updateRoomQuery, [descript, id]);
+    return updateRoomRow[0];
+  }
+  
+  async function updateRoomsStatus(connection, id, status) {
+    const updateUserQuery = `
+    UPDATE Rooms 
+    SET status = ?
+    WHERE room_id = ?;`;
+    const updateRoomRow = await connection.query(updateUserQuery, [status, id]);
+    return updateRoomRow[0];
+  }
   
   module.exports = {
     selectRoomsByName,
@@ -111,7 +203,15 @@ async function selectRooms(connection) {
     selectRooms,
     selectRoomsName,
     insertRoomsInfo,
-    //selectUserPassword,
+    selectRoomsByHostID,
+    selectRoomsByRoomsId,
+    updateRoomsName,
+    updateRoomsAddr,
+    updateRoomsPrice,
+    updateRoomsCommission,
+    updateRoomsCleanCost,
+    updateRoomsDescription,
+    updateRoomsStatus
     //selectUserAccount,
     //updateUserInfo,
   };

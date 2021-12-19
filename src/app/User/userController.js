@@ -6,6 +6,7 @@ const {response, errResponse} = require("../../../config/response");
 
 const regexuser_email = require("regex-email");
 const {emit} = require("nodemon");
+const baseResponseStatus = require("../../../config/baseResponseStatus");
 
 /**
  * API No. 0
@@ -91,7 +92,7 @@ exports.getUserById = async function (req, res) {
     /**
      * Path Variable: userId
      */
-    const userId = req.query.userId;
+    const userId = req.params.userId;
 
     if (!userId) return res.send(errResponse(baseResponse.USER_USERID_EMPTY));
 
@@ -99,6 +100,24 @@ exports.getUserById = async function (req, res) {
     return res.send(response(baseResponse.SUCCESS, userByUserId));
 };
 
+exports.postReservation = async function (req, res) {
+
+
+    const {user_email, room_name, adults, childeren, infants, pets, check_in_date, check_out_date} = req.body;
+
+    if (!user_email) 
+        return res.send(errResponse(baseResponse.SIGNUP_user_email_EMPTY));
+    if (!regexuser_email.test(user_email))
+        return res.send(response(baseResponse.SIGNUP_user_email_ERROR_TYPE));
+    if (!room_name) 
+        return res.send(errResponse(baseResponse.ROOMS_NAME_EMPTY));
+    
+    console.log(" 통과 ");
+    const signUpReservation = await userService.createReservation(user_email, room_name, adults, childeren,
+         infants, pets, check_in_date, check_out_date);
+
+    return res.send(signUpReservation);
+};
 
 // TODO: After 로그인 인증 방법 (JWT)
 /**
@@ -112,6 +131,16 @@ exports.login = async function (req, res) {
     const {user_email, password} = req.body;
 
     // TODO: user_email, password 형식적 Validation
+    if (!user_email)
+        return res.send(response(baseResponse.SIGNUP_EMAIL_EMPTY));
+
+    // 길이 체크
+    if (user_email.length > 30)
+        return res.send(response(baseResponse.SIGNUP_EMAIL_LENGTH));
+
+    // 형식 체크 (by 정규표현식)
+    if (!regexuser_email.test(user_email))
+        return res.send(response(baseResponse.SIGNUP_EMAIL_ERROR_TYPE));
 
     const signInResponse = await userService.postSignIn(user_email, password);
 
@@ -128,30 +157,83 @@ exports.login = async function (req, res) {
  */
 exports.patchUsers = async function (req, res) {
 
-    // jwt - userId, path variable :userId
+    // jwt - userId, query :userId  
 
-    const userIdFromJWT = req.verifiedToken.userId
+    const userIdFromJWT = req.tokenInfo.userId;
+    console.log(req.tokenInfo);
+    const userId = req.query.userId;
+    console.log(userId);
+    const option = req.params.option;
+    const value = req.body.value;
+    // 권한 확인
+    if (userIdFromJWT != userId) {
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    }
+    if (!option) return res.send(errResponse(baseResponse.OPTION_EMPTY));
 
-    const userId = req.params.userId;
-    const nickname = req.body.nickname;
+    if(option == "name") {
+        const editUserName = await userService.editUser(userId, value, option);
+        return res.send(editUserName);
+    }
+    else if(option == "sex"){
+        const editUserSex = await userService.editUser(userId, value, option);
+        return res.send(editUserSex);
+    }
+    else if(option == "birth") {
+        const editUserBirth = await userService.editUser(userId, value, option);
+        return res.send(editUserBirth);
+    }
+    else if(option == "email") {
+        const editUserEmail = await userService.editUser(userId, value, option);  
+        return res.send(editUserEmail); 
+    }
+    else if(option == "phonenum") {
+        const editUserPhonenum = await userService.editUser(userId, value, option);
+        return res.send(editUserPhonenum);
+    }
+         
+    return res.send(response(baseResponse.SUCCESS));
+    
+};
 
+exports.patchUsersStatus = async function (req, res) {
+
+    const userIdFromJWT = req.tokenInfo.userId;
+    const userId = req.query.userId;
+    const status = req.body.status;
     if (userIdFromJWT != userId) {
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
     } else {
-        if (!nickname) return res.send(errResponse(baseResponse.USER_NICKNAME_EMPTY));
+        if (!status) return res.send(errResponse(baseResponse.USER_CHANGE_STATUS_EMPTY));
 
-        const editUserInfo = await userService.editUser(userId, nickname)
+        const editUserInfo = await userService.editUserStatus(userId, status)
         return res.send(editUserInfo);
     }
 };
-
 
 /** JWT 토큰 검증 API
  * [GET] /app/auto-login
  */
 exports.check = async function (req, res) {
-    const userIdResult = req.verifiedToken.userId;
-    console.log(userIdResult);
-    return res.send(response(baseResponse.TOKEN_VERIFICATION_SUCCESS));
+    const userIdResult = req.tokenInfo.userId;
+    console.log(userIdResult + " 회원이 자동 로그인 되었습니다.");
+
+    const userInfo = await userProvider.retrieveUser(userIdResult);
+    
+    return res.send(response(baseResponse.TOKEN_VERIFICATION_SUCCESS, userInfo));
 };
 
+exports.delete = async function (req, res) {
+    const userIdResult = req.tokenInfo.userId;
+    const userId = req.query.userId;
+    const status = req.tokenInfo.status;
+    console.log(status);
+    if (userIdResult != userId) 
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    if (status == 'withdrawl')
+        res.send(errResponse(baseResponse.SIGNIN_INACTIVE_ACCOUNT));
+
+    const deleteUserInfo = await userService.deleteUserInfo(userId);
+
+    return res.send(response(baseResponse.SUCCESS));
+}

@@ -38,3 +38,19 @@ exports.nameCheck = async function (name) {
     return nameCheckResult;
 };
 
+exports.getRoomsByHostId = async function (hostId) {
+    const connection = await pool.getConnection(async (conn) => conn);
+    const getRooms = await roomsDao.selectRoomsByHostID(connection, hostId);
+    connection.release();
+
+    return getRooms;
+}
+
+exports.getRoomsByRoomsId = async function (roomsId) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const getRoomInfo = await roomsDao.selectRoomsByRoomsId(connection, roomsId);
+  console.log(getRoomInfo[host_id]);
+  connection.release();
+
+  return getRoomInfo[0];
+}
