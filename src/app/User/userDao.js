@@ -32,8 +32,8 @@ async function selectUserId(connection, userId) {
 
 async function insertReservationInfo(connection, insertReservationParams) {
   const insertReservationQuery = `
-                  INSERT INTO Reservation(user_id, room_name, adults, childeren, infants, pets, check_in_date, check_out_date)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+                  INSERT INTO Reservation(user_id, room_id, adults, childeren, infants, pets, check_in_date, check_out_date, status)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'exist');
                   `;
   const insertReservationInfoRow = await connection.query(
     insertReservationQuery,
@@ -143,6 +143,45 @@ async function updateUserStatus(connection, id, status) {
   return updateUserRow[0];
 }
 
+async function getReservationInformation(connection, userId, roomId) {
+  const getReservationInfoQuery = `
+  SELECT room_id
+  FROM Reservation
+  WHERE user_id = ? and room_id = ?;
+  `;
+  const getReservationInfoRow = await connection.query(getReservationInfoQuery, [userId,roomId]);
+  return getReservationInfoRow;
+}
+
+async function postReview(connection, insertParams) {
+  const postReviewQuery = `
+  INSERT INTO Reviews(user_id, room_id, text, status)
+                  VALUES (?, ?, ?, 'exist');
+                  `;
+  ;
+  const postReviewRow = await connection.query(postReviewQuery, insertParams);
+  return postReviewRow[0];
+}
+
+async function getReview(connection, reviewId) {
+  const getReviewQuery =`
+  SELECT user_id
+  FROM Reviews
+  WHERE review_id = ?;
+  `;
+  const getReviewRow = await connection.query(getReviewQuery, reviewId);
+  return getReviewRow;
+} 
+
+async function updateReview(connection, reviewId, text) {
+  const updateReviewQuery = `
+  UPDATE Reviews
+  SET text = ?
+  WHERE review_id = ?;
+  `;
+  const updateReviewRow = await connection.query(updateReviewQuery, [text, reviewId]);
+  return updateReviewRow;
+}
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -156,6 +195,10 @@ module.exports = {
   updateUserEmail,
   updateUserPhoneNum,
   updateUserStatus,
-  insertReservationInfo
+  insertReservationInfo,
+  getReservationInformation,
+  postReview,
+  getReview,
+  updateReview
 };
 

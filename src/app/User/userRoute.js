@@ -17,7 +17,7 @@ module.exports = function(app){
     app.get('/app/users/:userId', user.getUserById);
 
     // 4. 유저 예약 API
-    app.post('/app/reservation', user.postReservation);
+    app.post('/app/reservation/:userId', jwtMiddleware ,user.postReservation);
 
     // TODO: After 로그인 인증 방법 (JWT)
     // 5. 로그인 하기 API (JWT 생성)
@@ -36,9 +36,11 @@ module.exports = function(app){
     // 9. 탈퇴하기 API
     app.patch('/app/users', jwtMiddleware, user.delete);
 
-    app.post('/app/users/review', jwtMiddleware, user.postReview);
+    // 10. 리뷰작성 API
+    app.post('/app/review/:userId/:roomId', jwtMiddleware, user.postReview);
 
-    
+    // 11. 리뷰수정 API
+    app.patch('/app/review/:userId/:reviewId', jwtMiddleware, user.updateReview);
 };
 
 

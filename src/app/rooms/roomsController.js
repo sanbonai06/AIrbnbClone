@@ -103,55 +103,65 @@ exports.patchRooms = async function (req, res) {
     const option = req.params.option;
     const value = req.body.value;
     const roomInfoByRoomsId = await roomsProvider.getRoomsByRoomsId(roomsId);
-    const hostId = roomInfoByRoomsId.host_id;     //hostid
+    const hostId = roomInfoByRoomsId[0].host_id;     //hostid
     const userIdFromJwt = req.tokenInfo.userId;     // 쿼리
     const userStatusFromJwt = req.tokenInfo.status;
-    console.log(roomInfoByRoomsId.host_id);
+    
     // host 권한 확인
     if(userIdFromJwt != hostId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
     if( userStatusFromJwt != "host" && userStatusFromJwt != "superhost") return res.send(errResponse(baseResponse.USER_NOT_HOST));
 
     if (!option) return res.send(errResponse(baseResponse.OPTION_EMPTY));
 
+    let editRoomsResult;
     if(option == "name") {
         const editRoomsName = await roomsService.editRooms(roomsId, value, option);
-        return res.send(editRoomsName);
+        //return res.send(editRoomsName);
+        editRoomsResult = editRoomsName;
     }
     else if(option == "addr"){
         const editRoomsaddr = await roomsService.editRooms(roomsId, value, option);
-        return res.send(editRoomsaddr);
+        //return res.send(editRoomsaddr);
+        editRoomsResult - editRoomsaddr
     }
     else if(option == "price") {
         const editRoomsPrice = await roomsService.editRooms(roomsId, value, option);
-        return res.send(editRoomsPrice);
+      //return res.send(editRoomsPrice);
+      editRoomsResult = editRoomsPrice;
     }
     else if(option == "commission") {
         const editRoomsCommission = await roomsService.editRooms(roomsId, value, option);  
-        return res.send(editRoomsCommission); 
+        //return res.send(editRoomsCommission); 
+        editRoomsResult = editRoomsCommission;
     }
     else if(option == "cleanCost") {
         const editRoomscleanCost = await roomsService.editRooms(roomsId, value, option);
-        return res.send(editRoomscleanCost);
+        //return res.send(editRoomscleanCost);
+        editRoomsResult = editRoomscleanCost;
     }
     else if(option == "description") {
         const editRoomsDescription = await roomsService.editRooms(roomsId, value, option);
-        return res.send(editRoomsDescription);
+        //return res.send(editRoomsDescription);
+        editRoomsResult = editRoomsDescription;
     }
          
-    return res.send(editRoomsInfo);
+    return res.send(response(baseResponse.SUCCESS, editRoomsResult));
     
 };
 exports.deleteRoomsInfo = async function (req, res) {
     const userIdResult = req.tokenInfo.userId;
-    const userId = req.query.userId;
-    const status = req.tokenInfo.status;
+    const roomsId = req.params.roomsId;
+    const roomInfoByRoomsId = await roomsProvider.getRoomsByRoomsId(roomsId);
+    const status = roomInfoByRoomsId[0].status;
+    const hostId = roomInfoByRoomsId[0].host_id;
 
-    if (userIdResult != userId) 
-        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
-    if (status == 'withdrawl')
-        res.send(errResponse(baseResponse.SIGNIN_INACTIVE_ACCOUNT));
+    // 권한 확인
+    if(userIdResult != hostId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    console.log(userIdResult);
+    if (status == 'closed')
+        res.send(errResponse(baseResponse.SIGNUP_CLOSED_ROOM));
 
-    const deleteUserInfo = await userService.deleteUserInfo(userId);
+    const deleteUserInfo = await roomsService.deleteRoomsInfo(roomsId);
 
     return res.send(response(baseResponse.SUCCESS));
 }

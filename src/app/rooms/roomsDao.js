@@ -197,6 +197,15 @@ async function selectRooms(connection) {
     return updateRoomRow[0];
   }
   
+  async function deleteRooms(connection, id) {
+    const deleteRoomQuery = `
+    UPDATE Rooms
+    SET status = 'closed'
+    WHERE room_id = ?;
+    `;
+    const deleteRoomRow = await connection.query(deleteRoomQuery, id);
+    return deleteRoomRow;
+  }
   module.exports = {
     selectRoomsByName,
     selectUserStatus,
@@ -211,7 +220,8 @@ async function selectRooms(connection) {
     updateRoomsCommission,
     updateRoomsCleanCost,
     updateRoomsDescription,
-    updateRoomsStatus
+    updateRoomsStatus,
+    deleteRooms
     //selectUserAccount,
     //updateUserInfo,
   };

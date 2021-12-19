@@ -5,6 +5,7 @@ const userProvider = require("./userProvider");
 const userDao = require("./userDao");
 const baseResponse = require("../../../config/baseResponseStatus");
 const roomsProvider = require("../rooms/roomsProvider");
+const roomsDao = require("../rooms/roomsDao");
 const {response} = require("../../../config/response");
 const {errResponse} = require("../../../config/response");
 
@@ -43,24 +44,26 @@ exports.createUser = async function (user_email, password, name, sex, phonenum, 
     }
 };
 
-exports.createReservation = async function (user_email, room_name, adults, childeren, infants, pets, check_in_date, check_out_date) {
+exports.createReservation = async function (user_email, room_id, adults, childeren, infants, pets, check_in_date, check_out_date) {
     try {
-        const checkRoomsStatus = await roomsProvider.retrieveRoom(room_name);
+        const checkRoomsStatus = await roomsProvider.getRoomsByRoomsId(room_id);
         const checkUserEmail = await userProvider.user_emailCheck(user_email);
+        const room_name = checkRoomsStatus[0].room_name;
         
-        if(checkRoomsStatus.status === "disavailable" ) return errResponse(baseResponse.SIGNUP_DISAVAILABLE_ROOM);
+        if(checkRoomsStatus[0].status != "available" ) return errResponse(baseResponse.SIGNUP_DISAVAILABLE_ROOM);
         
         //if(checkUserEmail.length > 1) return errResponse(baseResponse.SIGNUP_REDUNDANT_EMAIL);
 
         const userId = checkUserEmail[0].user_id;
         
-        const insertReservationParams = [userId, room_name, adults, childeren, infants, pets, check_in_date, check_out_date];
+        const insertReservationParams = [userId, room_id, adults, childeren, infants, pets, check_in_date, check_out_date];
         const connection = await pool.getConnection(async (conn) => conn);
       
         
         const reservationResult = await userDao.insertReservationInfo(connection, insertReservationParams);
+        const changeRoomStatus = await roomsDao.updateRoomsStatus(connection, room_id, 'booked');
     
-        console.log(`등록된 예약 번호 : ${reservationResult[0].insertId}`)
+        console.log(`등록된 예약 번호 : ${reservationResult[0].insertId} 예약한 유저 번호 : ${userId} 예약된 방 번호 : ${room_id}`);
         connection.release();
         return response(baseResponse.SUCCESS);
     }
@@ -178,6 +181,53 @@ exports.deleteUserInfo = async function (id) {
     }
     catch (err) {
         logger.error(`App - editUserDelete Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.getReservationInfo = async function (userId, roomId) {
+    try{
+        const connection = await pool.getConnection(async (conn) => conn);
+        const reservationInfoRow = await userDao.getReservationInformation(connection, userId, roomId);
+        connection.release();
+
+        return reservationInfoRow;
+    }
+    catch (err) {
+        logger.error(`App - getReservationInfo Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.createReview = async function (userId, roomId, review) {
+    try{
+        if(!review) return errResponse(baseResponse.SIGNUP_REVIEW_EMPTY);
+
+        const connection = await pool.getConnection(async (conn) => conn);
+        const insertParams = [userId, roomId, review];
+        const createReviewResult = await userDao.postReview(connection, insertParams);
+        connection.release();
+        console.log(`회원 아이디 ${userId}님이 방 아이디 ${roomId}에 대하여 리뷰를 작성하셨습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - postReview Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.editReview = async function (reviewId, text) {
+    try{
+        if(!text) return errResponse(baseResponse.SIGNUP_REVIEW_EMPTY);
+
+        const connection = await pool.getConnection(async (conn) => conn);
+        const updateReviewResult = await userDao.updateReview(connection, reviewId, text);
+        connection.release();
+        console.log(`리뷰 아이디 ${reviewId}의 리뷰가 수정되었습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - editReview Service error\n: ${err.message}`);
         return errResponse(baseResponse.DB_ERROR);
     }
 }

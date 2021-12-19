@@ -42,30 +42,47 @@ exports.editRooms = async function (id, val, option) {
     try {
         const connection = await pool.getConnection(async (conn) => conn);
         if(option == "name") {
-            const editRoomsNameResult = await RoomsDao.updateRoomsName(connection, id, val) 
+            const editRoomsNameResult = await roomsDao.updateRoomsName(connection, id, val)
+            response(baseResponse.SUCCESS); 
         }
         else if(option == "addr"){
-            const editRoomsAddrResult = await RoomsDao.updateRoomsAddr(connection, id, val) 
+            const editRoomsAddrResult = await roomsDao.updateRoomsAddr(connection, id, val) 
         }
         else if(option == "price") {
-            const editRoomsPriceResult = await RoomsDao.updateRoomsPrice(connection, id, val) 
+            const editRoomsPriceResult = await roomsDao.updateRoomsPrice(connection, id, val) 
         }
         else if(option == "commission") {
-            const editRoomsCommissionResult = await RoomsDao.updateRoomsCommission(connection, id, val) 
+            const editRoomsCommissionResult = await roomsDao.updateRoomsCommission(connection, id, val) 
         }
         else if(option == "cleanCost") {
-            const editRoomsCleanCostResult = await RoomsDao.updateRoomsCleanCost(connection, id, val) 
+            const editRoomsCleanCostResult = await roomsDao.updateRoomsCleanCost(connection, id, val) 
         }
         else if(option == "description") {
-            const editRoomsDescription = await RoomsDao.updateRoomsDescription(connection, id, val)
+            const editRoomsDescription = await roomsDao.updateRoomsDescription(connection, id, val)
         }
-           // const editRoomsResult = await RoomsDao.updateRoomsCleanCost(connection, id, val) 
+           // const editRoomsResult = await roomsDao.updateRoomsCleanCost(connection, id, val) 
         connection.release();
         console.log("방 번호 " + id + " 방의 " +  option + "이/가 수정 되었습니다.");
         return; //response(baseResponse.SUCCESS);
 
     } catch (err) {
         logger.error(`App - editRooms Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.deleteRoomsInfo = async function(id) {
+    try{
+        const connection = await pool.getConnection(async (conn) => conn);
+        const status = "closed";
+        const deleteRoomsResult = await roomsDao.deleteRooms(connection, id);
+
+        connection.release();
+        console.log("방 번호 " + id + " 방은 이제 이용 불가능합니다.");
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - deleteRooms Service error\n: ${err.message}`);
         return errResponse(baseResponse.DB_ERROR);
     }
 }

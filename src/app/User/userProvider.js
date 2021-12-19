@@ -63,3 +63,11 @@ exports.testMySQL = async () => {
   connection.release(); //커넥션 해제
   return testResult;
 };
+
+exports.getReview = async (reviewId) => {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const reviewRow = await userDao.getReview(connection, reviewId);
+  connection.release();
+
+  return reviewRow[0];
+}

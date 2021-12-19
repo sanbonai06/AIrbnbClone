@@ -3,7 +3,8 @@ const userProvider = require("../../app/User/userProvider");
 const userService = require("../../app/User/userService");
 const baseResponse = require("../../../config/baseResponseStatus");
 const {response, errResponse} = require("../../../config/response");
-
+const roomsProvider = require("../rooms/roomsProvider");
+const roomsService = require("../rooms/roomsService");
 const regexuser_email = require("regex-email");
 const {emit} = require("nodemon");
 const baseResponseStatus = require("../../../config/baseResponseStatus");
@@ -100,20 +101,27 @@ exports.getUserById = async function (req, res) {
     return res.send(response(baseResponse.SUCCESS, userByUserId));
 };
 
+// 예약 API
 exports.postReservation = async function (req, res) {
 
 
-    const {user_email, room_name, adults, childeren, infants, pets, check_in_date, check_out_date} = req.body;
+    const {user_email, room_id, adults, childeren, infants, pets, check_in_date, check_out_date} = req.body;
+    
+    const userIdFromJWT = req.tokenInfo.userId;
+    const userId = req.params.userId;
 
+    if(userIdFromJWT != userId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
     if (!user_email) 
         return res.send(errResponse(baseResponse.SIGNUP_user_email_EMPTY));
     if (!regexuser_email.test(user_email))
         return res.send(response(baseResponse.SIGNUP_user_email_ERROR_TYPE));
-    if (!room_name) 
-        return res.send(errResponse(baseResponse.ROOMS_NAME_EMPTY));
+    if (!room_id) 
+        return res.send(errResponse(baseResponse.ROOMS_ID_EMPTY));
+    const roomsInfo = await roomsProvider.getRoomsByRoomsId(room_id);
+    const rooms_status = roomsInfo[0].status;
+    //if(rooms_status != 'available') return res.send(errResponse(baseResponse.SIGNUP_DISAVAILABLE_ROOM));
     
-    console.log(" 통과 ");
-    const signUpReservation = await userService.createReservation(user_email, room_name, adults, childeren,
+    const signUpReservation = await userService.createReservation(user_email, room_id, adults, childeren,
          infants, pets, check_in_date, check_out_date);
 
     return res.send(signUpReservation);
@@ -227,7 +235,7 @@ exports.delete = async function (req, res) {
     const userIdResult = req.tokenInfo.userId;
     const userId = req.query.userId;
     const status = req.tokenInfo.status;
-    console.log(status);
+    //console.log(status);
     if (userIdResult != userId) 
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
     if (status == 'withdrawl')
@@ -236,4 +244,41 @@ exports.delete = async function (req, res) {
     const deleteUserInfo = await userService.deleteUserInfo(userId);
 
     return res.send(response(baseResponse.SUCCESS));
+}
+
+exports.postReview = async function (req, res) {
+    
+    const userIdResult = req.tokenInfo.userId;
+    const userId = req.params.userId;
+    const roomId = req.params.roomId;
+    const reviewDiscript = req.body.discript;
+
+    if(userIdResult != userId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+
+    const reservationInfo = await userService.getReservationInfo(userId, roomId); 
+    //리뷰 권한 확인
+    if(reservationInfo[0].length < 1) return res.send(errResponse(baseResponse.SIGNUP_NOT_USE_ROOM));
+
+    const postReview = await userService.createReview(userId, roomId, reviewDiscript);
+
+    return res.send(postReview);
+}
+
+exports.updateReview = async function (req, res) {
+
+    const userIdResult = req.tokenInfo.userId;
+    const userId = req.params.userId;
+    const reviewId = req.params.reviewId;
+    const discript = req.body.discript;
+
+    if(userIdResult != userId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+
+    const getReviewByReviewId = await userProvider.getReview(reviewId);
+    const reviewOfUserID = getReviewByReviewId[0].user_id;
+
+    if(reviewOfUserID != userId) return res.send(errResponse(baseResponse.SIGNUP_REVIEW_USERID));
+
+    const updateReview = await userService.editReview(reviewId, discript);
+
+    return res.send(updateReview);
 }
