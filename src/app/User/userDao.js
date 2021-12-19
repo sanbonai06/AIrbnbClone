@@ -165,7 +165,7 @@ async function postReview(connection, insertParams) {
 
 async function getReview(connection, reviewId) {
   const getReviewQuery =`
-  SELECT user_id
+  SELECT user_id, status
   FROM Reviews
   WHERE review_id = ?;
   `;
@@ -181,6 +181,16 @@ async function updateReview(connection, reviewId, text) {
   `;
   const updateReviewRow = await connection.query(updateReviewQuery, [text, reviewId]);
   return updateReviewRow;
+}
+
+async function deleteReview(connection, reviewId) {
+  const deleteReviewQuery = `
+  UPDATE Reviews
+  SET Status = 'non-existent'
+  WHERE review_id = ?;
+  `;
+  const deleteReviewRow = await connection.query(deleteReviewQuery, reviewId);
+  return deleteReviewRow;
 }
 module.exports = {
   selectUser,
@@ -199,6 +209,7 @@ module.exports = {
   getReservationInformation,
   postReview,
   getReview,
-  updateReview
+  updateReview,
+  deleteReview
 };
 

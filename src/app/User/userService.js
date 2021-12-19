@@ -219,7 +219,7 @@ exports.createReview = async function (userId, roomId, review) {
 exports.editReview = async function (reviewId, text) {
     try{
         if(!text) return errResponse(baseResponse.SIGNUP_REVIEW_EMPTY);
-
+        if(!reviewId) return errResponse(baseResponse.SIGNUP_NONEXISTENT_REVIEW);
         const connection = await pool.getConnection(async (conn) => conn);
         const updateReviewResult = await userDao.updateReview(connection, reviewId, text);
         connection.release();
@@ -228,6 +228,21 @@ exports.editReview = async function (reviewId, text) {
     }
     catch (err) {
         logger.error(`App - editReview Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.deleteReview = async function (reviewId) {
+    try{
+        if(!reviewId) return errResponse(baseResponse.SIGNUP_NONEXISTENT_REVIEW);
+        const connection = await pool.getConnection(async (conn) => conn);
+        const deletteReviewResult = await userDao.deleteReview(connection, reviewId);
+        connection.release();
+        console.log(`리뷰 아이디 ${reviewId}의 리뷰가 삭제되었습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - deleteReview Service error\n: ${err.message}`);
         return errResponse(baseResponse.DB_ERROR);
     }
 }

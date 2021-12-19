@@ -54,6 +54,8 @@ module.exports = {
     SIGNUP_NOT_USE_ROOM : { "isSuccess" : false, "code": 3010, "message": "사용자가 방을 이용한 적이 없습니다."},
     SIGNUP_REVIEW_EMPTY : { "isSuccess" : false, "code": 3011, "message": "리뷰 내용을 입력해주세요."},
     SIGNUP_REVIEW_USERID : { "isSuccess" : false, "code": 3012, "message": "본인이 작성한 리뷰가 맞는지 확인해주세요"},
+    SIGNUP_NONEXISTENT_REVIEW : {"isSuccess" : false, "code": 3013, "message": "존재하지 않는 리뷰입니다."},
+    SIGNUP_REVIEWID_EMPTY : { "isSuccess" : false, "code": 3011, "message": "리뷰 아이디를 입력해주세요."},
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},
     SERVER_ERROR : { "isSuccess": false, "code": 4001, "message": "서버 에러"},

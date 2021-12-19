@@ -41,6 +41,9 @@ module.exports = function(app){
 
     // 11. 리뷰수정 API
     app.patch('/app/review/:userId/:reviewId', jwtMiddleware, user.updateReview);
+
+    // 12. 리뷰삭제 API
+    app.patch('/app/review/delete/:userId/:reviewId', jwtMiddleware, user.deleteReview);
 };
 
 

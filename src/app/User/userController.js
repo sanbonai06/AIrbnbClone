@@ -274,11 +274,32 @@ exports.updateReview = async function (req, res) {
     if(userIdResult != userId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
 
     const getReviewByReviewId = await userProvider.getReview(reviewId);
-    const reviewOfUserID = getReviewByReviewId[0].user_id;
+    const reviewOfUserId = getReviewByReviewId[0].user_id;
+    const reviewStatus = getReviewByReviewId[0].status;
 
-    if(reviewOfUserID != userId) return res.send(errResponse(baseResponse.SIGNUP_REVIEW_USERID));
+    if(reviewOfUserId != userId) return res.send(errResponse(baseResponse.SIGNUP_REVIEW_USERID));
+    if(reviewStatus != 'exist') return res.send(errResponse(baseResponse.SIGNUP_NONEXISTENT_REVIEW));
 
     const updateReview = await userService.editReview(reviewId, discript);
 
     return res.send(updateReview);
+}
+
+exports.deleteReview = async function (req, res) {
+
+    const userIdResult = req.tokenInfo.userId;
+    const userId = req.params.userId;
+    const reviewId = req.params.reviewId;
+
+    if(userIdResult != userId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+
+    const getReviewByReviewId = await userProvider.getReview(reviewId);
+    const reviewOfUserID = getReviewByReviewId[0].user_id;
+    const reviewStatus = getReviewByReviewId[0].status;
+
+    if(reviewOfUserID != userId) return res.send(errResponse(baseResponse.SIGNUP_REVIEW_USERID));
+    if(reviewStatus != "exist") return res.send(errResponse(baseResponse.SIGNUP_NONEXISTENT_REVIEW));
+    const deleteReview = await userService.deleteReview(reviewId);
+
+    return res.send(deleteReview);
 }
