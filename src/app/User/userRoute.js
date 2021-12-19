@@ -36,6 +36,8 @@ module.exports = function(app){
     // 9. 탈퇴하기 API
     app.patch('/app/users', jwtMiddleware, user.delete);
 
+    app.post('/app/users/review', jwtMiddleware, user.postReview);
+
     
 };
 

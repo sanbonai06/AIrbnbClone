@@ -20,6 +20,7 @@ module.exports = function(app){
 
     // 6. 방 정보 삭제 API
     app.patch('/app/rooms', jwtMiddleware, rooms.deleteRoomsInfo);
+    
  };
 
 
