@@ -253,12 +253,13 @@ async function getWish(connection, roomId, wishlistId) {
 
 async function selectWishlist(connection, wishlistId) {
   const selectWishlistQuery = `
-  SELECT wishlist.wishlist_name, wish_middle.room_id, Rooms.room_name, Rooms.room_address, Rooms.room_price,
-         room_options.item1, room_options.item2, room_options.item3, room_images.path
+  SELECT wishlist.wishlist_id, wishlist.wishlist_name, wish_middle.room_id, 
+        Rooms.room_name, Rooms.room_address, Rooms.room_price, room_options.item1,
+        room_options.item2, room_options.item3, room_images.path
   FROM wishlist, wish_middle, Rooms, room_options, room_images
-  WHERE wishlist.wishlist_id = ? and wish_middle.wishlist_id = wishlist.wishlist_id  and Rooms.room_id = wish_middle.room_id
-        and  room_options.room_option_id = Rooms.room_option_id and room_images.room_id = Rooms.room_id;
-        `;
+  WHERE wishlist.wishlist_id = ? and wish_middle.wishlist_id = wishlist.wishlist_id and Rooms.room_id = wish_middle.room_id
+        and room_options.room_option_id = Rooms.room_option_id and room_images.room_id = Rooms.room_id
+  `;
   const [selectWishlistRow] = await connection.query(selectWishlistQuery, wishlistId);
   return selectWishlistRow;
 }
