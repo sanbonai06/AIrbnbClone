@@ -86,3 +86,35 @@ exports.deleteRoomsInfo = async function(id) {
         return errResponse(baseResponse.DB_ERROR);
     }
 }
+
+exports.uploadImage = async function(id, name, url) {
+    try{
+        const connection = await pool.getConnection(async (conn) => conn);
+        const insertParams = [id, name, url];
+        const postImage = await roomsDao.postImage(connection, insertParams);
+
+        connection.release();
+        const imageId = postImage[0].insertId;
+        console.log(`방 번호 ${id}에 사진 번호 ${imageId}이/가 추가되었습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - deleteRooms Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.deleteImage = async function (id) {
+    try{
+        const connection = await pool.getConnection(async (conn) => conn);
+        const deleteImage = await roomsDao.deleteImage(connection, id);
+
+        connection.release();
+        console.log(`사진 번호 ${id}이/가 삭제되었습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - deleteRooms Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}

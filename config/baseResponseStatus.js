@@ -39,7 +39,6 @@ module.exports = {
     USER_NOT_HOST : { "isSuccess": false, "code": 2020, "message":"당신은 호스트가 아닙니다." },
     HOST_ID_EMPTY : { "isSuccess": false, "code": 2021, "message": "호스트아이디를 입력해 주세요"},
     ROOMS_ID_EMPTY : { "isSuccess": false, "code": 2022, "message": "방 식별번호를 입력해주세요"},
-    ROOMS_ID_EMPTY : { "isSuccess": false, "code": 2023, "message": "방 아이디를 입력해주세요"},
     // Response error
     SIGNUP_REDUNDANT_EMAIL : { "isSuccess": false, "code": 3001, "message":"중복된 이메일입니다." },
     SIGNUP_REDUNDANT_NICKNAME : { "isSuccess": false, "code": 3002, "message":"중복된 닉네임입니다." },
@@ -56,6 +55,12 @@ module.exports = {
     SIGNUP_REVIEW_USERID : { "isSuccess" : false, "code": 3012, "message": "본인이 작성한 리뷰가 맞는지 확인해주세요"},
     SIGNUP_NONEXISTENT_REVIEW : {"isSuccess" : false, "code": 3013, "message": "존재하지 않는 리뷰입니다."},
     SIGNUP_REVIEWID_EMPTY : { "isSuccess" : false, "code": 3011, "message": "리뷰 아이디를 입력해주세요."},
+    SIGNUP_NOT_IMAGE : { "isSuccess": false, "code": 3012, "message": "존재하지 않는 사진입니다."},
+    SIGNUP_NOT_RESERVATION_MATCH : { "isSuccess": false, "code": 3013, "message": "회원이 등록한 예약이 아닙니다."},
+    SIGNUP_RESERVATIONID_EMPTY : { "isSuccess" : false, "code": 3014, "message": "예약 아이디를 입력해주세요."},
+    SIGNUP_WISHLISTNAME_EMPTY : { "isSuccess": false, "code": 3015, "message": "등록할 위시리스트 이름을 입력해주세요"},
+    SIGNUP_WISHLSITID_EMPTY : { "isSuccess": false, "code": 3016, "message": "등록할 위시리스트 아이디를 입력해주세요"},
+    SIGNUP_ALREADYEXIST_ROOM : { "isSuccess": false, "code": 3017, "message": "이미 위시에 등록된 방입니다."},
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},
     SERVER_ERROR : { "isSuccess": false, "code": 4001, "message": "서버 에러"},

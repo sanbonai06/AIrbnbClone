@@ -103,6 +103,7 @@ exports.patchRooms = async function (req, res) {
     const option = req.params.option;
     const value = req.body.value;
     const roomInfoByRoomsId = await roomsProvider.getRoomsByRoomsId(roomsId);
+    console.log(roomInfoByRoomsId);
     const hostId = roomInfoByRoomsId[0].host_id;     //hostid
     const userIdFromJwt = req.tokenInfo.userId;     // 쿼리
     const userStatusFromJwt = req.tokenInfo.status;
@@ -157,11 +158,42 @@ exports.deleteRoomsInfo = async function (req, res) {
 
     // 권한 확인
     if(userIdResult != hostId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
-    console.log(userIdResult);
     if (status == 'closed')
         res.send(errResponse(baseResponse.SIGNUP_CLOSED_ROOM));
 
-    const deleteUserInfo = await roomsService.deleteRoomsInfo(roomsId);
+    const deleteRoomsInfo = await roomsService.deleteRoomsInfo(roomsId);
+
+    return res.send(response(baseResponse.SUCCESS));
+}
+
+exports.postImage = async function (req, res) {
+    const userIdResult = req.tokenInfo.userId;
+    const roomsId = req.params.roomsId;
+    const imageName = req.body.name;
+    const imageUrl = req.body.Url;
+    const roomInfoByRoomsId = await roomsProvider.getRoomsByRoomsId(roomsId);
+    const hostId = roomInfoByRoomsId[0].host_id;
+
+    if(userIdResult != hostId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+
+    const createRoomsImage = await roomsService.uploadImage(roomsId, imageName, imageUrl);
+
+    return res.send(response(baseResponse.SUCCESS));
+}
+
+exports.deleteImage = async function (req, res) {
+    const userIdResult = req.tokenInfo.userId;
+    const roomsId = req.params.roomsId;
+    const imageUrl = req.body.Url;
+    const roomInfo = await roomsProvider.getRoomsByRoomsId(roomsId);
+    const getRoomsImageByimageUrl = await roomsProvider.getRoomsImageByimageUrl(imageUrl);
+    const hostId = roomInfo[0].host_id;
+    const imageId = getRoomsImageByimageUrl[0].images_id;
+
+    if(userIdResult != hostId) return res.send(errResponse(baseResponse1.USER_ID_NOT_MATCH));
+    if(!imageId) return res.send(errResponse(baseResponse.SIGNUP_NOT_IMAGE));
+
+    const deleteRoomsImage = await roomsService.deleteImage(imageId);
 
     return res.send(response(baseResponse.SUCCESS));
 }

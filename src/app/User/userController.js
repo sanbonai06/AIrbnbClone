@@ -8,6 +8,7 @@ const roomsService = require("../rooms/roomsService");
 const regexuser_email = require("regex-email");
 const {emit} = require("nodemon");
 const baseResponseStatus = require("../../../config/baseResponseStatus");
+const { createWishlist } = require("./userDao");
 
 /**
  * API No. 0
@@ -302,4 +303,65 @@ exports.deleteReview = async function (req, res) {
     const deleteReview = await userService.deleteReview(reviewId);
 
     return res.send(deleteReview);
+}
+
+exports.deleteReservation = async function (req ,res) {
+
+    const userIdResult = req.tokenInfo.userId;
+    const userId = req.params.userId;
+    const reservationId = req.params.reservationId;
+
+    if(userIdResult != userId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    
+    const getReservation = await userProvider.getReservation(reservationId);
+    const userIdByReservation = getReservation[0].user_id;
+
+    if(userId != userIdByReservation) return res.send(errResponse(baseResponse.SIGNUP_NOT_RESERVATION_MATCH));
+
+    const deleteReservationResult = await userService.deleteReservation(reservationId);
+
+    return res.send(deleteReservationResult);
+}
+
+exports.createWishlist = async (req, res) => {
+
+    const userIdResult = req.tokenInfo.userId;
+    const wishlistName = req.body.name;
+    const userId = req.params.userId;
+    const roomId = req.params.roomId;
+
+    if(userIdResult != userId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+
+    const getWishlistResult = await userProvider.retrieveWishlist(userId, wishlistName);
+    //위시리스트를 새로 만들면서 추가
+    if(getWishlistResult.length < 1) {
+        const createWishlistResult = await userService.createWishlist(wishlistName, userId);    //트랜잭션 처리로 롤백 넣자
+        const getCreateWishlist = await userProvider.retrieveWishlist(userId, wishlistName);
+        const wishlistId = getCreateWishlist[0].wishlist_id;
+        const addWish = await userService.addWish(userId, roomId, wishlistId);
+        return res.send(addWish);
+    }
+    else {                  
+        const wishlistId = getWishlistResult[0].wishlist_id;                                            //이미 존재하는 위시리스트에 추가 할 때..
+        const getWishResult = await userProvider.retrieveWish(roomId, wishlistId);
+        if(getWishResult.length >= 1) return res.send(errResponse(baseResponse.SIGNUP_ALREADYEXIST_ROOM));
+
+        const addWish = await userService.addWish(userId, roomId, wishlistId);
+        return res.send(addWish);
+    }
+
+
+}
+
+exports.showWishlist = async (req, res) => {
+    
+    const userIdFromJWT = req.tokenInfo.userId;
+    const userId = req.params.userId;
+    const wishlistId = req.params.wishlistId;
+    
+    if(userIdFromJWT != userId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+
+    const showWishlistResult = await userProvider.retrieveWishlistInfo(wishlistId);
+    
+    return res.send(response(baseResponse.SUCCESS, showWishlistResult));
 }

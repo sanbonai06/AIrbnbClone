@@ -13,6 +13,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const {connect} = require("http2");
 const res = require("express/lib/response");
+const { create } = require("domain");
 
 // Service: Create, Update, Delete 비즈니스 로직 처리
 
@@ -234,15 +235,65 @@ exports.editReview = async function (reviewId, text) {
 
 exports.deleteReview = async function (reviewId) {
     try{
-        if(!reviewId) return errResponse(baseResponse.SIGNUP_NONEXISTENT_REVIEW);
+        if(!reviewId) return errResponse(baseResponse.SIGNUP_REVIEWID_EMPTY);
         const connection = await pool.getConnection(async (conn) => conn);
-        const deletteReviewResult = await userDao.deleteReview(connection, reviewId);
+        const deleteReviewResult = await userDao.deleteReview(connection, reviewId);
         connection.release();
         console.log(`리뷰 아이디 ${reviewId}의 리뷰가 삭제되었습니다.`);
         return response(baseResponse.SUCCESS);
     }
     catch (err) {
         logger.error(`App - deleteReview Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.deleteReservation = async (id) => {
+    try{
+        if(!id) return errResponse(baseResponse.SIGNUP_RESERVATIONID_EMPTY);
+        const connection = await pool.getConnection(async (conn) => conn);
+        const deleteReservation = await userDao.deleteReservation(connection, id);
+        connection.release();
+        console.log(`예약 아이디 ${id}의 예약이 삭제되었습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - deleteReservation Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.createWishlist = async (name, userId) => {
+    try{
+        if(!name) return errResponse(baseResponse.SIGNUP_WISHLISTNAME_EMPTY);
+        const connection = await pool.getConnection(async (conn) => conn);
+        const insertParams = [name, userId];
+        const createWishlist = await userDao.createWishlist(connection, insertParams);
+        connection.release();
+
+        const wishlistId = createWishlist[0].insertId;
+        console.log(`${userId}의 위시리스트 ${wishlistId} : ${name}이/가 등록되었습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - createWishlist Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.addWish = async (userId, roomId, wishlistId) => {
+    try{
+        if(!wishlistId) return errResponse(baseResponse.SIGNUP_WISHLSITID_EMPTY);
+        const connection = await pool.getConnection(async (conn) => conn);
+        const insertParams = [roomId, wishlistId];
+        const addWishMiddle = await userDao.addWish(connection, insertParams);
+        connection.release();
+
+        console.log(`${userId}번 유저가 ${roomId}번 방을 위시에 추가했습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - createWishlist Service error\n: ${err.message}`);
         return errResponse(baseResponse.DB_ERROR);
     }
 }

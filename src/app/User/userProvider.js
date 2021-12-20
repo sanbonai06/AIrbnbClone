@@ -71,3 +71,35 @@ exports.getReview = async (reviewId) => {
 
   return reviewRow[0];
 }
+
+exports.getReservation = async (id) => {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const reservationRow = await userDao.getReservation(connection, id);
+  connection.release();
+
+  return reservationRow[0];
+}
+
+exports.retrieveWishlist = async (id, name) => {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const getWishlistRow = await userDao.getWishlist(connection, id, name);
+  connection.release();
+
+  return getWishlistRow;
+}
+
+exports.retrieveWish = async (roomId, wishlistId) => {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const getWishRow = await userDao.getWish(connection, roomId, wishlistId);
+  connection.release();
+
+  return getWishRow[0];
+}
+
+exports.retrieveWishlistInfo = async (wishlistId) => {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const retrieveWishlistRow = await userDao.selectWishlist(connection, wishlistId);
+  connection.release();
+
+  return retrieveWishlistRow;
+}

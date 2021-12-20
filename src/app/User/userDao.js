@@ -192,6 +192,76 @@ async function deleteReview(connection, reviewId) {
   const deleteReviewRow = await connection.query(deleteReviewQuery, reviewId);
   return deleteReviewRow;
 }
+
+async function getReservation(connection, id) {
+  const getReservationQuery = `
+  SELECT user_id
+  FROM Reservation
+  WHERE reservation_id = ?;
+  `;
+  const getReservationRow = await connection.query(getReservationQuery, id);
+  return getReservationRow;
+}
+
+async function deleteReservation(connection, id) {
+  const deleteReservationQuery = `
+  UPDATE Reservation
+  SET status = 'non-existent'
+  WHERE reservation_id = ?;
+  `;
+  const deleteReservationRow = await connection.query(deleteReservationQuery, id);
+  return deleteReservationRow;
+}
+
+async function createWishlist(connection, insertParams) {
+  const createWishlistQuery = `
+  INSERT INTO wishlist(wishlist_name, user_id, status)
+  VALUES (?, ?, 'exist');
+  `;
+  const createWishlistRow = await connection.query(createWishlistQuery, insertParams);
+  return createWishlistRow;
+}
+
+async function getWishlist(connection, id, name) {
+  const getWishlistQuery = `
+  SELECT wishlist_id
+  FROM wishlist
+  WHERE user_id = ? and wishlist_name = ?;
+  `;
+  const [getWishlistRow] = await connection.query(getWishlistQuery, [id, name]);
+  return getWishlistRow;
+}
+
+async function addWish(connection, insertParams) {
+  const addWishQuery = `
+  INSERT INTO wish_middle(room_id, wishlist_id, status)
+  VALUE (?, ?, 'exist');
+  `;
+  const addWishRow = await connection.query(addWishQuery, insertParams);
+  return addWishRow;
+}
+
+async function getWish(connection, roomId, wishlistId) {
+  const getWishQuery = `
+  SELECT wish_add_id
+  FROM wish_middle
+  WHERE room_id = ? and wishlist_id = ? and status = 'exist';
+  `;
+  const getWishRow = await connection.query(getWishQuery, [roomId, wishlistId]);
+  return getWishRow;
+}
+
+async function selectWishlist(connection, wishlistId) {
+  const selectWishlistQuery = `
+  SELECT wishlist.wishlist_name, wish_middle.room_id, Rooms.room_name, Rooms.room_address, Rooms.room_price,
+         room_options.item1, room_options.item2, room_options.item3, room_images.path
+  FROM wishlist, wish_middle, Rooms, room_options, room_images
+  WHERE wishlist.wishlist_id = ? and wish_middle.wishlist_id = wishlist.wishlist_id  and Rooms.room_id = wish_middle.room_id
+        and  room_options.room_option_id = Rooms.room_option_id and room_images.room_id = Rooms.room_id;
+        `;
+  const [selectWishlistRow] = await connection.query(selectWishlistQuery, wishlistId);
+  return selectWishlistRow;
+}
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -210,6 +280,13 @@ module.exports = {
   postReview,
   getReview,
   updateReview,
-  deleteReview
+  deleteReview,
+  getReservation,
+  deleteReservation,
+  createWishlist,
+  getWishlist,
+  addWish,
+  getWish,
+  selectWishlist
 };
 

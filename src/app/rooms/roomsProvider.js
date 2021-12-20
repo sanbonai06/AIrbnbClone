@@ -50,5 +50,13 @@ exports.getRoomsByRoomsId = async function (roomsId) {
   const connection = await pool.getConnection(async (conn) => conn);
   const getRoomInfo = await roomsDao.selectRoomsByRoomsId(connection, roomsId);
   connection.release();
-  return getRoomInfo[0];
+  return getRoomInfo;
+}
+
+exports.getRoomsImageByimageUrl = async function (Url) {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const getRoomImage = await roomsDao.selectRoomsImageByimageUrl(connection, Url);
+  connection.release();
+
+  return getRoomImage[0];
 }

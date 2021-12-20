@@ -44,6 +44,16 @@ module.exports = function(app){
 
     // 12. 리뷰삭제 API
     app.patch('/app/review/delete/:userId/:reviewId', jwtMiddleware, user.deleteReview);
+
+    // 13. 예약 취소 API
+    app.patch('/app/reservation/cancle/:userId/:reservationId', jwtMiddleware, user.deleteReservation);
+
+    // 14. 위시리스트 생성 API
+    app.post('/app/wishlist/:userId/:roomId', jwtMiddleware, user.createWishlist);
+
+    // 15. 위시리스트 보여주기 API
+    app.get('/app/wishlist/:userId/:wishlistId', jwtMiddleware, user.showWishlist);
+
 };
 
 

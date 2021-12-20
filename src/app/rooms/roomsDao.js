@@ -81,42 +81,7 @@ async function selectRooms(connection) {
       
       return selectRoomsRow;
   }
-  // 패스워드 체크
-  /*async function selectUserPassword(connection, selectUserPasswordParams) {
-    const selectUserPasswordQuery = `
-          SELECT user_email, user_name, user_password
-          FROM Users 
-          WHERE user_email = ? AND user_password = ?;`;
-    const selectUserPasswordRow = await connection.query(
-        selectUserPasswordQuery,
-        selectUserPasswordParams
-    );
-  
-    return selectUserPasswordRow;
-  }
-  
-  // 유저 계정 상태 체크 (jwt 생성 위해 id 값도 가져온다.)
-  async function selectUserAccount(connection, email) {
-    const selectUserAccountQuery = `
-          SELECT status, id
-          FROM Users 
-          WHERE user_email = ?;`;
-    const selectUserAccountRow = await connection.query(
-        selectUserAccountQuery,
-        email
-    );
-    return selectUserAccountRow[0];
-  }
-  
-  async function updateUserInfo(connection, id, user_name) {
-    const updateUserQuery = `
-    UPDATE Users 
-    SET user_name = ?
-    WHERE id = ?;`;
-    const updateUserRow = await connection.query(updateUserQuery, [user_name, id]);
-    return updateUserRow[0];
-  }
-  */
+
   async function selectRoomsByRoomsId(connection, roomsId) {
 
     const selectRoomsInfoQuery = `
@@ -129,8 +94,7 @@ async function selectRooms(connection) {
             selectRoomsInfoQuery,
             roomsId
           );
-        
-        return selectRoomsRow;
+        return selectRoomsRow[0];
 
   }
 
@@ -206,6 +170,35 @@ async function selectRooms(connection) {
     const deleteRoomRow = await connection.query(deleteRoomQuery, id);
     return deleteRoomRow;
   }
+
+  async function postImage(connection, insertParams) {
+    const postImageQuery =`
+    INSERT INTO room_images(room_id, image_name, path, status)
+    VALUES (?, ?, ?, 'exist');
+    `;
+    const postImageRow = await connection.query(postImageQuery, insertParams);
+    return postImageRow;
+  }
+
+  async function selectRoomsImageByimageUrl(connection, url) {
+    const getImageIdQuery = `
+    SELECT images_id
+    FROM room_images
+    WHERE path = ?;
+    `;
+    const getImageRow = await connection.query(getImageIdQuery, url);
+    return getImageRow;
+  }
+
+  async function deleteImage(connection, id) {
+    const deleteImageQuery = `
+    UPDATE room_images
+    SET status = 'non-existent'
+    WHERE images_id = ?;
+    `;
+    const deleteImageRow = await connection.query(deleteImageQuery, id);
+    return deleteImageRow;
+  }
   module.exports = {
     selectRoomsByName,
     selectUserStatus,
@@ -221,7 +214,10 @@ async function selectRooms(connection) {
     updateRoomsCleanCost,
     updateRoomsDescription,
     updateRoomsStatus,
-    deleteRooms
+    deleteRooms,
+    postImage,
+    selectRoomsImageByimageUrl,
+    deleteImage
     //selectUserAccount,
     //updateUserInfo,
   };
