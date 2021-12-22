@@ -297,3 +297,79 @@ exports.addWish = async (userId, roomId, wishlistId) => {
         return errResponse(baseResponse.DB_ERROR);
     }
 }
+
+exports.updateWishlistName = async (Id, val) => {
+    try{
+        if(!Id) return errResponse(baseResponse.SIGNUP_WISHLSITID_EMPTY);
+        const connection = await pool.getConnection(async (conn) => conn);
+        const modifyWishlistName = await userDao.updateWishlistName(connection, Id, val);
+        connection.release();
+
+        console.log(`${Id}번 위시리스트의 이름이 ${val}로 변경되었습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - createWishlist Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.updateWishlistInfo = async (Id, val) => {
+    try{
+        if(!Id) return errResponse(baseResponse.SIGNUP_WISHLSITID_EMPTY);
+        const connection = await pool.getConnection(async (conn) =>conn);
+        const modifyWishlistInfo = await userDao.updateWishlistInfo(connection, Id, val);
+        connection.release();
+
+        console.log(`${Id}번 위시리스트에서 ${val}번 방이 삭제되었습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - updateWishlist Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.postRank = async (Id, item1, item2, item3, item4, item5, item6, total) => {
+    try{
+        if(!Id) return errResponse(baseResponse.ROOMS_ID_EMPTY);
+        if((item1 < 0 || item1 > 5) || (item2 < 0 || item2 > 5) || (item3 < 0 || item3 > 5) || (item4 < 0 || item4 > 5)
+        || (item5 < 0 || item5 > 5) || (item6 < 0 || item6 > 5 ) || (total < 0 || total > 5)) 
+            return errResponse(baseResponse.SIGNUP_RANKERR);
+        const connection = await pool.getConnection(async (conn) => conn);
+        console.log(item1, item2, item3, item4, item5, item6, total);
+
+        const insertParams = [item1, item2, item3, item4, item5, item6, total, Id];
+        const evaluationRankRow = await userDao.postRank(connection, insertParams);
+        connection.release();
+
+        console.log(`${Id}번 방에 대한 별점 평가가 완료되었습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - postRank Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.createEvaluation = async (Id, item1, item2, item3, item4, item5, item6, total) => {
+    try{
+        if(!Id) return errResponse(baseResponse.ROOMS_ID_EMPTY);
+        if((item1 < 0 || item1 > 5) || (item2 < 0 || item2 > 5) || (item3 < 0 || item3 > 5) || (item4 < 0 || item4 > 5)
+        || (item5 < 0 || item5 > 5) || (item6 < 0 || item6 > 5 ) || (total < 0 || total > 5)) 
+            return errResponse(baseResponse.SIGNUP_RANKERR);
+        const connection = await pool.getConnection(async (conn) => conn);
+        console.log(item1, item2, item3, item4, item5, item6, total);
+
+        const insertParams = [item1, item2, item3, item4, item5, item6, total, Id];
+        const evaluationRankRow = await userDao.createEvaluation(connection, insertParams);
+        connection.release();
+
+        console.log(`${Id}번 방에 대한 별점 생성이 완료되었습니다.`);
+        return response(baseResponse.SUCCESS);
+    }
+    catch (err) {
+        logger.error(`App - createEvaluation Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}

@@ -61,6 +61,7 @@ module.exports = {
     SIGNUP_WISHLISTNAME_EMPTY : { "isSuccess": false, "code": 3015, "message": "등록할 위시리스트 이름을 입력해주세요"},
     SIGNUP_WISHLSITID_EMPTY : { "isSuccess": false, "code": 3016, "message": "등록할 위시리스트 아이디를 입력해주세요"},
     SIGNUP_ALREADYEXIST_ROOM : { "isSuccess": false, "code": 3017, "message": "이미 위시에 등록된 방입니다."},
+    SIGNUP_RANKERR : { "isSuccess" : false, "code" : 3018, "message" : "별점은 0~5까지만 입력해주세요"},
     //Connection, Transaction 등의 서버 오류
     DB_ERROR : { "isSuccess": false, "code": 4000, "message": "데이터 베이스 에러"},
     SERVER_ERROR : { "isSuccess": false, "code": 4001, "message": "서버 에러"},

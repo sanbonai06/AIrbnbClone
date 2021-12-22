@@ -103,3 +103,19 @@ exports.retrieveWishlistInfo = async (wishlistId) => {
 
   return retrieveWishlistRow;
 }
+
+exports.retrieveReservation =  async (Id) => {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const getReservationRow = await userDao.selectReservation(connection, Id);
+  connection.release();
+
+  return getReservationRow;
+}
+
+exports.retrieveRank = async (Id) => {
+  const connection = await pool.getConnection(async (conn) => conn);
+  const getRankRow = await userDao.selectRank(connection, Id);
+  connection.release();
+
+  return getRankRow;
+}

@@ -365,3 +365,69 @@ exports.showWishlist = async (req, res) => {
     
     return res.send(response(baseResponse.SUCCESS, showWishlistResult));
 }
+
+exports.getReservation = async (req ,res) => {
+
+    const userIdFromJWT = req.tokenInfo.userId;
+    const userId = req.params.userId;
+    const reservationId = req.params.reservationId;
+
+    if(userIdFromJWT != userId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+
+    const getReservationResult = await userProvider.retrieveReservation(reservationId);
+
+    return res.send(response(baseResponse.SUCCESS, getReservationResult));
+}
+
+exports.updateWishlist = async (req, res) => {
+
+    const userIdFromJWT = req.tokenInfo.userId;
+    const userId = req.params.userId;
+    const wishlistId = req.params.wishlistId;
+    const option = req.body.option;
+    const value = req.body.value;
+
+    if(userId != userIdFromJWT) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+
+    if(option === "name") {
+        const updateWishlistName = await userService.updateWishlistName(wishlistId, value);
+    }
+    else if(option === "deleteRooms") {
+        const updateWishlistInfo = await userService.updateWishlistInfo(wishlistId, value);
+    }
+
+    return res.send(response(baseResponse.SUCCESS));
+}
+
+exports.postRank = async (req, res) => {
+
+    const userIdFromJWT = req.tokenInfo.userId;
+    const userId = req.params.userId;
+    const roomId = req.params.roomId;
+    const item1 = req.body.item1;
+    const item2 = req.body.item2;
+    const item3 = req.body.item3;
+    const item4 = req.body.item4;
+    const item5 = req.body.item5;
+    const item6 = req.body.item6;
+    const total = (item1 + item2 + item3 + item4 + item5 + item6)/6;
+    if(userIdFromJWT != userId) return res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+
+    const getRankResult = await userProvider.retrieveRank(roomId);
+    if(getRankResult.length < 1) {
+        const createEvaluation = await userService.createEvaluation(roomId, item1, item2, item3, item4, item5, item6, total);
+    }
+    else {
+    const createRankResult = await userProvider.retrieveRank(roomId);
+    const rank1 = (createRankResult[0].item1 + item1)/2;
+    const rank2 = (createRankResult[0].item2 + item2)/2;
+    const rank3 = (createRankResult[0].item3 + item3)/2;
+    const rank4 = (createRankResult[0].item4 + item4)/2;
+    const rank5 = (createRankResult[0].item5 + item5)/2;
+    const rank6 = (createRankResult[0].item6 + item6)/2;
+    const totalRank = (createRankResult[0].total + total)/2;
+    const evaluationRankResult = await userService.postRank(roomId, rank1, rank2, rank3, rank4, rank5, rank6, totalRank);
+    }
+
+    return res.send(response(baseResponse.SUCCESS));
+}

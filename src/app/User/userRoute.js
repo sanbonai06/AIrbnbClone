@@ -4,9 +4,6 @@ module.exports = function(app){
     const user = require('./userController');
     const jwtMiddleware = require('../../../config/jwtMiddleware');
 
-    // 0. 테스트 API
-    // app.get('/app/test', user.getTest)
-
     // 1. 유저 생성 (회원가입) API
     app.post('/app/users', user.postUsers);
 
@@ -51,9 +48,17 @@ module.exports = function(app){
     // 14. 위시리스트 생성 API
     app.post('/app/wishlist/:userId/:roomId', jwtMiddleware, user.createWishlist);
 
-    // 15. 위시리스트 보여주기 API
+    // 15. 위시리스트 조회 API
     app.get('/app/wishlist/:userId/:wishlistId', jwtMiddleware, user.showWishlist);
 
+    // 16. 위시리스트 수정 API
+    app.patch('/app/wishlist/:userId/:wishlistId', jwtMiddleware, user.updateWishlist);
+
+    // 17. 예약 내역 조회 APi
+    app.get('/app/reservation/check/:userId/:reservationId', jwtMiddleware, user.getReservation);
+
+    // 18. 별점 평가 API
+    app.post('/app/rank/:userId/:roomId', jwtMiddleware, user.postRank);
 };
 
 

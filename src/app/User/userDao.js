@@ -263,6 +263,67 @@ async function selectWishlist(connection, wishlistId) {
   const [selectWishlistRow] = await connection.query(selectWishlistQuery, wishlistId);
   return selectWishlistRow;
 }
+
+async function selectReservation(connection, Id) {
+  const selectReservationQuery = `
+  SELECT room_images.path, Reservation.check_in_date  , Reservation.check_out_date,
+   sum(Reservation.adults + Reservation.childeren) AS "총 인원 수", Reservation.reservation_id, Rooms.return_policy,
+   Rooms.room_address, Rooms.room_price*Reservation.days AS "총 숙박비"
+   FROM room_images, Reservation, Rooms
+   WHERE Reservation.reservation_id = ? and Rooms.room_id = Reservation.room_id and room_images.room_id = Rooms.room_id;
+   `;
+   const [selectReservationRow] = await connection.query(selectReservationQuery, Id);
+   return selectReservationRow;
+}
+
+async function updateWishlistName(connection, Id, val) {
+  const updateWishlistNameQuery = `
+  UPDATE wishlist
+  SET wishlist_name = ?
+  WHERE wishlist_id = ?;
+  `;
+  const updateWishlistNameRow = await connection.query(updateWishlistNameQuery, [val, Id]);
+  return updateWishlistNameRow;
+}
+
+async function updateWishlistInfo(connection, Id, val) {
+  const updateWishlistInfoQuery = `
+  UPDATE wish_middle
+  SET status = 'non-existent'
+  WHERE wishlist_id = ? and room_id = ?;
+  `;
+  const updateWishlistInfoRow = await connection.query(updateWishlistInfoQuery, [Id, val]);
+  return updateWishlistInfoRow;
+}
+
+async function postRank(connection, insertParams) {
+  const postRankQuery = `
+  UPDATE Evaluation
+  SET item1 = ?, item2 = ?, item3 = ?, item4 = ?, item5 = ?, item6 = ?, total = ?
+  WHERE room_id = ?;
+  `;
+  const postRankRow = await connection.query(postRankQuery, insertParams);
+  return postRankRow;
+}
+
+async function selectRank(connection, Id) {
+  const selectRankQuery = `
+  SELECT item1, item2, item3, item4, item5, item6, total
+  FROM Evaluation
+  WHERE Evaluation.room_id = ?;
+  `;
+  const [selectRankRow] = await connection.query(selectRankQuery, Id);
+  return selectRankRow;
+}
+
+async function createEvaluation(connection, insertParams) {
+  const createEvaluationQuery = `
+  INSERT INTO Evaluation(item1, item2, item3, item4, item5, item6, total, room_id, status)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'exist');
+  `;
+  const createEvaluationRow = await connection.query(createEvaluationQuery, insertParams);
+  return createEvaluationRow;
+}
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -288,6 +349,12 @@ module.exports = {
   getWishlist,
   addWish,
   getWish,
-  selectWishlist
+  selectWishlist,
+  selectReservation,
+  updateWishlistName,
+  updateWishlistInfo,
+  postRank,
+  selectRank,
+  createEvaluation
 };
 

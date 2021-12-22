@@ -26,6 +26,7 @@ module.exports = function(app){
 
     // 8. 방 사진 삭제 API
     app.patch('/app/rooms/image/delete/:roomsId', jwtMiddleware, rooms.deleteImage);
+
  };
 
 
