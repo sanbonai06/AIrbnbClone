@@ -197,3 +197,15 @@ exports.deleteImage = async function (req, res) {
 
     return res.send(response(baseResponse.SUCCESS));
 }
+
+exports.serchRooms = async function (req, res) {
+    const location = req.params.location;
+    const checkInDate = req.params.checkInDate;
+    const checkOutDate = req.params.checkOutDate;
+
+    console.log(typeof(checkInDate));
+    console.log(typeof(checkOutDate));
+    const serchRoomsByLocation = await roomsProvider.getRoomsByLocation(location);
+
+    return res.send(response(baseResponse.SUCCESS));
+}

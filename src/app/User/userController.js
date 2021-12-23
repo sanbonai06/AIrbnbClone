@@ -376,6 +376,7 @@ exports.getReservation = async (req ,res) => {
 
     const getReservationResult = await userProvider.retrieveReservation(reservationId);
 
+    console.log(getReservationResult[0].check_in_date - 20211215);
     return res.send(response(baseResponse.SUCCESS, getReservationResult));
 }
 

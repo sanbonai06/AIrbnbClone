@@ -22,9 +22,9 @@ async function selectUserEmail(connection, email) {
 // userId 회원 조회
 async function selectUserId(connection, userId) {
   const selectUserIdQuery = `
-                 SELECT user_id, user_email, user_name, status 
-                 FROM Users 
-                 WHERE user_id = ?;
+                 SELECT Users.user_id, Users.user_email, Users.user_name, Users.status, Reviews.text, Reviews.room_id 
+                 FROM Users, Reviews
+                 WHERE Users.user_id = ? and Reviews.user_id = Users.user_id;
                  `;
   const [userRow] = await connection.query(selectUserIdQuery, userId);
   return userRow;
@@ -254,8 +254,8 @@ async function getWish(connection, roomId, wishlistId) {
 async function selectWishlist(connection, wishlistId) {
   const selectWishlistQuery = `
   SELECT wishlist.wishlist_id, wishlist.wishlist_name, wish_middle.room_id, 
-        Rooms.room_name, Rooms.room_address, Rooms.room_price, room_options.item1,
-        room_options.item2, room_options.item3, room_images.path
+        Rooms.room_name, Rooms.room_address, Rooms.room_price, room_options.item1 AS "침실 개수",
+        room_options.item2 AS "침대 개수", room_options.item3 AS "화장실 개수", room_images.path
   FROM wishlist, wish_middle, Rooms, room_options, room_images
   WHERE wishlist.wishlist_id = ? and wish_middle.wishlist_id = wishlist.wishlist_id and Rooms.room_id = wish_middle.room_id
         and room_options.room_option_id = Rooms.room_option_id and room_images.room_id = Rooms.room_id

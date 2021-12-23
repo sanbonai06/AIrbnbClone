@@ -1,10 +1,10 @@
-// 모든 유저 조회
+// 모든 방 조회
 async function selectRooms(connection) {
-    const selectRoomsListQuery = `
+    const selectRoomsListQuery = ` 
                   SELECT room_name, room_address, room_price, room_wishes, service_commission, tax_of_lodge, clean_up_cost,
-                  room_description, check_in_time, check_out_time, Rooms.status, Users.user_name, Users.user_email
-                  FROM Rooms, Users
-                  WHERE Rooms.host_id = Users.user_id;
+                  room_description, check_in_time, check_out_time, Evaluation.total, Rooms.status, Users.user_name, Users.user_email
+                  FROM Rooms, Evaluation, Users
+                  WHERE Rooms.host_id = Users.user_id and Evaluation.room_id = Rooms.room_id;
                   `;
     const [roomsRows] = await connection.query(selectRoomsListQuery);
     return roomsRows;
@@ -33,10 +33,11 @@ async function selectRooms(connection) {
   async function selectRoomsByName(connection, name) {
     const selectRoomByNameQuery = `
                    SELECT room_name, room_address, room_price, room_wishes, service_commission, tax_of_lodge, clean_up_cost,
-                   room_description, check_in_time, check_out_time, Rooms.status, Users.user_name, Users.user_email
-                   FROM Users, Rooms 
+                   room_description, check_in_time, check_out_time, Evaluation.total, Rooms.status, Users.user_name, Users.user_email
+                   FROM Users, Evaluation, Rooms 
                    WHERE room_name = ?
-                   and Rooms.host_id = Users.user_id;
+                   and Rooms.host_id = Users.user_id
+                   and Evaluation.room_id = Rooms.room_id;
                    `;
     const [roomRow] = await connection.query(selectRoomByNameQuery, name);
     return roomRow;
@@ -70,9 +71,10 @@ async function selectRooms(connection) {
   async function selectRoomsByHostID(connection, hostId) {
     const selectRoomsByHostIdQuery = `
           SELECT  room_name, room_address, room_price, room_wishes, service_commission, tax_of_lodge, clean_up_cost,
-          room_description, check_in_time, check_out_time, Rooms.status, Users.user_name, Users.user_email
-          FROM Users, Rooms
-          WHERE Rooms.host_id = ? and Users.user_id = Rooms.host_id; 
+          room_description, check_in_time, check_out_time, Evaluation.total, Rooms.status, Users.user_name, Users.user_email
+          FROM Users, Evaluation, Rooms
+          WHERE Rooms.host_id = ? and Users.user_id = Rooms.host_id
+          and Evaluation.room_id = Rooms.room_id; 
           `;
         const selectRoomsRow = await connection.query(
           selectRoomsByHostIdQuery,
@@ -86,9 +88,10 @@ async function selectRooms(connection) {
 
     const selectRoomsInfoQuery = `
           SELECT  room_name, room_address, room_price, room_wishes, service_commission, tax_of_lodge, clean_up_cost,
-          room_description, check_in_time, check_out_time, Rooms.status, Users.user_name, Users.user_email, Rooms.host_id
-          FROM Users, Rooms
-          WHERE Rooms.room_id = ? and Users.user_id = Rooms.host_id; `;
+          room_description, check_in_time, check_out_time, Evaluation.total, Rooms.status, Users.user_name, Users.user_email, Rooms.host_id
+          FROM Users, Evaluation, Rooms
+          WHERE Rooms.room_id = ? and Evaluation.room_id = Rooms.room_id
+          and Users.user_id = Rooms.host_id; `;
           
           const selectRoomsRow = await connection.query(
             selectRoomsInfoQuery,
@@ -199,6 +202,16 @@ async function selectRooms(connection) {
     const deleteImageRow = await connection.query(deleteImageQuery, id);
     return deleteImageRow;
   }
+
+  async function selectRoomsByLocation(connection, location) {
+    const selectRoomsByLocationQuery = `
+    SELECT Rooms.room_id
+    FROM Rooms
+    WHERE Rooms.location = ?;
+    `;
+    const [selectRoomsRow] = await connection.query(selectRoomsByLocationQuery, location);
+    return selectRoomsRow;
+  }
   module.exports = {
     selectRoomsByName,
     selectUserStatus,
@@ -217,7 +230,8 @@ async function selectRooms(connection) {
     deleteRooms,
     postImage,
     selectRoomsImageByimageUrl,
-    deleteImage
+    deleteImage,
+    selectRoomsByLocation
     //selectUserAccount,
     //updateUserInfo,
   };

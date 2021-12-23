@@ -55,10 +55,13 @@ module.exports = function(app){
     app.patch('/app/wishlist/:userId/:wishlistId', jwtMiddleware, user.updateWishlist);
 
     // 17. 예약 내역 조회 APi
-    app.get('/app/reservation/check/:userId/:reservationId', jwtMiddleware, user.getReservation);
+    app.get('/app/reservation/:userId/:reservationId', jwtMiddleware, user.getReservation);
 
     // 18. 별점 평가 API
     app.post('/app/rank/:userId/:roomId', jwtMiddleware, user.postRank);
+
+    // 19. 소셜 로그인 API
+    app.get('/app/login/kakao')
 };
 
 

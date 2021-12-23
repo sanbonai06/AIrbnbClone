@@ -25,8 +25,10 @@ module.exports = function(app){
     app.post('/app/rooms/image/:roomsId', jwtMiddleware, rooms.postImage);
 
     // 8. 방 사진 삭제 API
-    app.patch('/app/rooms/image/delete/:roomsId', jwtMiddleware, rooms.deleteImage);
+    app.patch('/app/rooms/image/:roomsId', jwtMiddleware, rooms.deleteImage);
 
+    // 9. 지역과 날짜로 방 검색 API
+    app.get('/app/rooms/:location/:checkInDate/:checkOutDate', rooms.serchRooms);
  };
 
 
