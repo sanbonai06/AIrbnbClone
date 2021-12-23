@@ -324,6 +324,15 @@ async function createEvaluation(connection, insertParams) {
   const createEvaluationRow = await connection.query(createEvaluationQuery, insertParams);
   return createEvaluationRow;
 }
+
+async function createUserKakao(connection, email, name) {
+  const createUserKAkaoQuery = `
+  INSERT INTO Users(user_email, user_name, status)
+  VALUES (?, ?, 'user');
+  `;
+  const createUserKakaoRow = await connection.query(createUserKAkaoQuery, [email, name]);
+  return createUserKakaoRow;
+}
 module.exports = {
   selectUser,
   selectUserEmail,
@@ -355,6 +364,7 @@ module.exports = {
   updateWishlistInfo,
   postRank,
   selectRank,
-  createEvaluation
+  createEvaluation,
+  createUserKakao
 };
 

@@ -203,9 +203,23 @@ exports.serchRooms = async function (req, res) {
     const checkInDate = req.params.checkInDate;
     const checkOutDate = req.params.checkOutDate;
 
-    console.log(typeof(checkInDate));
-    console.log(typeof(checkOutDate));
-    const serchRoomsByLocation = await roomsProvider.getRoomsByLocation(location);
+    const serchRoomsByLocation = await roomsProvider.getRoomsByFilter(location);
 
-    return res.send(response(baseResponse.SUCCESS));
+    let i = 0;
+    let j = 0;
+    let trueRow = new Array();
+    while (serchRoomsByLocation[i]){
+        if(checkInDate < serchRoomsByLocation[i].check_in_date && checkOutDate <= serchRoomsByLocation[i].check_out_date){
+            trueRow[j]=serchRoomsByLocation[i].room_id;
+            j++;
+        }
+        else if(checkInDate >= serchRoomsByLocation[i].check_out_date){
+            trueRow[j]=serchRoomsByLocation[i].room_id;
+            j++;
+        }
+        i++;
+    }
+    const serchRoomsResult = await roomsProvider.serchRooms(trueRow);
+  
+    return res.send(response(baseResponse.SUCCESS, serchRoomsResult));
 }

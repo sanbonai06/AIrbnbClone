@@ -9,31 +9,12 @@ const regexuser_email = require("regex-email");
 const {emit} = require("nodemon");
 const baseResponseStatus = require("../../../config/baseResponseStatus");
 const { createWishlist } = require("./userDao");
+const axios = require('axios');
+const session = require('express-session');
+const {logger} = require("../../../config/winston");
+const qs = require('querystring');
 
-/**
- * API No. 0
- * API Name : 테스트 API
- * [GET] /app/test
- */
-// exports.getTest = async function (req, res) {
-//     return res.send(response(baseResponse.SUCCESS))
-// }
 
-/**
- * API No. 1
- * API Name : 유저 생성 (회원가입) API
- * [POST] /app/users
- exports.getTest = async (req, res) => {
-  //userProvider.testMySQL
-  try {
-    const testResult = await userProvider.testMySQL();
-    console.log("controller", testResult);
-    return res.status(200).json(testResult);
-  } catch (error) {
-    console.error(error);
-  }
-};
-*/
 exports.postUsers = async function (req, res) {
 
     /**
@@ -376,7 +357,6 @@ exports.getReservation = async (req ,res) => {
 
     const getReservationResult = await userProvider.retrieveReservation(reservationId);
 
-    console.log(getReservationResult[0].check_in_date - 20211215);
     return res.send(response(baseResponse.SUCCESS, getReservationResult));
 }
 
@@ -431,4 +411,41 @@ exports.postRank = async (req, res) => {
     }
 
     return res.send(response(baseResponse.SUCCESS));
+}
+
+exports.kakaoLogin = async (req, res) => {
+    const code = req.body.code;
+    const kakao = {
+        clientId:'bd268d0cb410528db6d621ec796ff961',
+        redirectUri:'http://localhost:3000/app/login/kakao',
+        kakaoCode: code
+    }
+    
+    const getToken = await userService.getToken(kakao.clientId, kakao.redirectUri, kakao.kakaoCode);
+
+    res.send(response(baseResponse.SUCCESS));
+}
+
+exports.kakaoLoginGetUserInfo = async (req, res) => {
+    //const accessToken = req.params.AccessToken;
+    const accessToken = req.body.token;
+    if(accessToken) {
+        const result = await userService.kakaoLogin(accessToken);
+
+        const kakaoUser = result.data.kakao_account;
+        const user_email = kakaoUser.email;
+        const user_nickname = kakaoUser.profile.nickname;
+        console.log(user_email);
+        console.log(user_nickname);
+
+        const emailCheckResult = await userProvider.user_emailCheck(user_email);
+        if(emailCheckResult.length < 1){
+            const createUserByKAkao = await userService.createKakaoUser(user_email, user_nickname);
+        }
+    }
+    else {
+        console.log("ERROR");
+    }
+    
+    res.send(response(baseResponse.SUCCESS));
 }

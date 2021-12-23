@@ -3,6 +3,14 @@ const jwtMiddleware = require('../../../config/jwtMiddleware');
 module.exports = function(app){
     const user = require('./userController');
     const jwtMiddleware = require('../../../config/jwtMiddleware');
+    const session = require('express-session');
+
+    app.use(session({
+        secret:'minjoon',
+        resave:true,
+        secure:false,
+        saveUninitialized:false,
+    }))
 
     // 1. 유저 생성 (회원가입) API
     app.post('/app/users', user.postUsers);
@@ -61,7 +69,8 @@ module.exports = function(app){
     app.post('/app/rank/:userId/:roomId', jwtMiddleware, user.postRank);
 
     // 19. 소셜 로그인 API
-    app.get('/app/login/kakao')
+    app.get('/app/login/kakao', user.kakaoLogin);
+    app.post('/app/login/kakao',user.kakaoLoginGetUserInfo);
 };
 
 

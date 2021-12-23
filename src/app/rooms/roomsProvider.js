@@ -61,10 +61,28 @@ exports.getRoomsImageByimageUrl = async function (Url) {
   return getRoomImage[0];
 }
 
-exports.getRoomsByLocation = async function (location) {
+exports.getRoomsByFilter = async function (location) {
   const connection = await pool.getConnection(async (conn) => conn);
-  const getRoomsRow = await roomsDao.selectRoomsByLocation(connection, location);
+  const getRoomsRow = await roomsDao.selectRoomsByFilter(connection, location);
   connection.release();
 
   return getRoomsRow;
+}
+
+exports.serchRooms = async (trueRow) => {
+  const connection = await pool.getConnection(async (conn) => conn);
+  let i = 0;
+  let serchRoomsIdParams = trueRow[0];
+  console.log(serchRoomsIdParams);
+  while(trueRow[i]){
+    if(i!=0){
+      serchRoomsIdParams = serchRoomsIdParams + "|" + trueRow[i];
+    }
+    i++;
+  }
+  console.log(serchRoomsIdParams);
+  const serchRoomsRow = await roomsDao.sortRooms(connection, serchRoomsIdParams);
+  connection.release();
+
+  return serchRoomsRow;
 }

@@ -203,14 +203,27 @@ async function selectRooms(connection) {
     return deleteImageRow;
   }
 
-  async function selectRoomsByLocation(connection, location) {
-    const selectRoomsByLocationQuery = `
-    SELECT Rooms.room_id
-    FROM Rooms
-    WHERE Rooms.location = ?;
+  async function selectRoomsByFilter(connection, location) {
+    const selectRoomsByFilterQuery = `
+    SELECT Rooms.room_id, Reservation.check_in_date, Reservation.check_out_date
+    FROM Rooms, Reservation
+    WHERE Rooms.location = ? and Reservation.room_id = Rooms.room_id;
     `;
-    const [selectRoomsRow] = await connection.query(selectRoomsByLocationQuery, location);
+    const [selectRoomsRow] = await connection.query(selectRoomsByFilterQuery, location);
     return selectRoomsRow;
+  }
+
+  async function sortRooms(connection, serchRoomsIdParams) {
+    const sortRoomsQuery = `
+    SELECT Rooms.room_name, Rooms.room_address, Rooms.room_latitude, Rooms.room_longitude, Rooms.room_price, Rooms.Max_people,
+    Evaluation.total AS "별점", room_options.item1 AS "침실", room_options.item2 AS "침대", room_options.item3 AS "화장실"
+    
+    FROM Rooms, Evaluation, room_options
+    WHERE Rooms.room_id REGEXP ? and Evaluation.room_id = Rooms.room_id and room_options.room_option_id = Rooms.room_option_id;
+    `;
+    const [sortRoomsRow] = await connection.query(sortRoomsQuery, serchRoomsIdParams);
+    console.log(sortRoomsRow);
+    return sortRoomsRow;
   }
   module.exports = {
     selectRoomsByName,
@@ -231,7 +244,8 @@ async function selectRooms(connection) {
     postImage,
     selectRoomsImageByimageUrl,
     deleteImage,
-    selectRoomsByLocation
+    selectRoomsByFilter,
+    sortRooms
     //selectUserAccount,
     //updateUserInfo,
   };

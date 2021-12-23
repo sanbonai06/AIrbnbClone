@@ -14,6 +14,9 @@ const crypto = require("crypto");
 const {connect} = require("http2");
 const res = require("express/lib/response");
 const { create } = require("domain");
+const axios = require('axios');
+const qs = require('qs');
+const { nextTick } = require("process");
 
 // Service: Create, Update, Delete 비즈니스 로직 처리
 
@@ -447,6 +450,88 @@ exports.createEvaluation = async (Id, item1, item2, item3, item4, item5, item6, 
     catch (err) {
         connection.rollback();
         logger.error(`App - createEvaluation Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+    finally {
+        connection.release();
+    }
+}
+
+exports.kakaoLogin = async (token) => {
+
+    try{
+        const userInfo = await axios({
+            method:'GET',
+            url:'https://kapi.kakao.com/v2/user/me',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+            }
+        })
+        
+        return userInfo;
+    }
+    catch (err) {
+        logger.error(`App - kakaoLogin Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+/*exports.getToken = async (kakao) =>{
+    //console.log(kakao);
+    let token;
+    try{
+        token = await axios({
+            method:'POST',
+            url: `https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id=${kakao.clientId}&redirect_uri=${kakao.redirectUri}&code=${kakao.kakaoCode}`,
+            headers: {
+                "Content-Type": "application/json;charset=UTF-8"
+            }
+        });
+        console.log(token);
+        return token;
+    }
+    catch (err){
+        logger.error(`App - getToken Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}   
+*/
+exports.getToken = async (Id, Uri, code) => {
+    try{
+        const token = await axios({
+            method:'POST',
+           // url:`https://kauth.kakao.com/oauth/token?grant_type=authorization_code&client_id=${Id}&redirect_uri=${Uri}&code=${code}`,
+           url: 'https://kauth.kakao.com/oauth/token',
+            headers: {
+                'Content-type': 'application/x-www-form-urlencoded;charset=utf-8',
+            },
+            data: qs.stringify({
+                grant_type: 'authorization_code',
+                client_id: Id,
+                redirect_uri: Uri,
+                code: code
+            })
+        });
+        console.log(token.data.aceess_token);
+        return token;
+    }
+    catch (err) {
+        logger.error(`App - getToken Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
+exports.createKakaoUser = async (email, name) => {
+    const connection = await pool.getConnection(async (conn) => conn);
+    try{
+        await connection.beginTransaction();
+        const createUserKakao = await userDao.createUserKakao(connection, email, name);
+        connection.commit();
+        console.log(`${createUserKakao[0].insertId}님이 카카오회원으로 가입하셨습니다.`);
+    }
+    catch (err) {
+        connection.rollback();
+        logger.error(`App - createUserByKakao Service error\n: ${err.message}`);
         return errResponse(baseResponse.DB_ERROR);
     }
     finally {

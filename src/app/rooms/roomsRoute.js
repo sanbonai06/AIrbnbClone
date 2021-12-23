@@ -22,7 +22,7 @@ module.exports = function(app){
     app.patch('/app/rooms/:roomsId', jwtMiddleware, rooms.deleteRoomsInfo);
     
     // 7. 방 사진 추가 API
-    app.post('/app/rooms/image/:roomsId', jwtMiddleware, rooms.postImage);
+    app.post('/app/rooms/images/:roomsId', jwtMiddleware, rooms.postImage);
 
     // 8. 방 사진 삭제 API
     app.patch('/app/rooms/image/:roomsId', jwtMiddleware, rooms.deleteImage);
