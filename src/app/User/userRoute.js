@@ -12,6 +12,9 @@ module.exports = function(app){
         saveUninitialized:false,
     }))
 
+    app.get('/app/test', (req, res) => {
+        res.send('성공입니다');
+    });
     // 1. 유저 생성 (회원가입) API
     app.post('/app/users', user.postUsers);
 
@@ -69,8 +72,9 @@ module.exports = function(app){
     app.post('/app/rank/:userId/:roomId', jwtMiddleware, user.postRank);
 
     // 19. 소셜 로그인 API
-    app.get('/app/login/kakao', user.kakaoLogin);
-    app.post('/app/login/kakao',user.kakaoLoginGetUserInfo);
+    //app.get('/app/login/kakaoCode', user.getKakaoCode);
+    app.get('/app/login/kakaoCode', user.kakaoLogin);
+    //app.post('/app/login/kakao',user.kakaoLoginGetUserInfo);
 };
 
 

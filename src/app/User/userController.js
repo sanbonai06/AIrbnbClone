@@ -412,40 +412,45 @@ exports.postRank = async (req, res) => {
 
     return res.send(response(baseResponse.SUCCESS));
 }
-
-exports.kakaoLogin = async (req, res) => {
-    const code = req.body.code;
+exports.getKakaoCode = async (req, res) => {
     const kakao = {
         clientId:'bd268d0cb410528db6d621ec796ff961',
-        redirectUri:'http://localhost:3000/app/login/kakao',
+        redirectUri:'http://localhost:3000/app/login/kakaoCode'
+    }
+    //console.alert('로그인중');
+    const getCode = await userService.getKakaoCode(kakao.clientId, kakao.redirectUri)
+
+    res.send(response(baseResponse.SUCCESS));
+}
+exports.kakaoLogin = async (req, res) => {
+    const code = req.query.code;
+    const kakao = {
+        clientId:'bd268d0cb410528db6d621ec796ff961',
+        redirectUri:'http://localhost:3000/app/login/kakaoCode',
         kakaoCode: code
     }
     
     const getToken = await userService.getToken(kakao.clientId, kakao.redirectUri, kakao.kakaoCode);
-
-    res.send(response(baseResponse.SUCCESS));
-}
-
-exports.kakaoLoginGetUserInfo = async (req, res) => {
-    //const accessToken = req.params.AccessToken;
-    const accessToken = req.body.token;
-    if(accessToken) {
-        const result = await userService.kakaoLogin(accessToken);
-
+    const result = await userService.kakaoLogin(getToken);
         const kakaoUser = result.data.kakao_account;
         const user_email = kakaoUser.email;
         const user_nickname = kakaoUser.profile.nickname;
-        console.log(user_email);
-        console.log(user_nickname);
-
+        const kakao_id = result.data.id.toString();
+        
+        
         const emailCheckResult = await userProvider.user_emailCheck(user_email);
         if(emailCheckResult.length < 1){
-            const createUserByKAkao = await userService.createKakaoUser(user_email, user_nickname);
+            const createUserByKAkao = await userService.createKakaoUser(user_email, kakao_id, user_nickname);
         }
-    }
-    else {
-        console.log("ERROR");
-    }
-    
-    res.send(response(baseResponse.SUCCESS));
+        
+        const loginByKakao = await userService.loginKakaoUser(user_email, kakao_id);
+        console.log(loginByKakao.result.userId)
+        const userId = loginByKakao.result.userId;
+        req.session.title = '유저 아이디';
+        session : userId;
+        const userInfoKakao = await userProvider.userInfoKakao(userId);
+
+
+        
+    res.send(loginByKakao);
 }

@@ -1,6 +1,6 @@
 const { pool } = require("../../../config/database");
 const { logger } = require("../../../config/winston");
-
+const axios = require('axios');
 const userDao = require("./userDao");
 
 // Provider: Read 비즈니스 로직 처리
@@ -118,4 +118,19 @@ exports.retrieveRank = async (Id) => {
   connection.release();
 
   return getRankRow;
+
+}
+exports.userInfoKakao = async (Id) => {
+  try{
+    const userInfo = await axios({
+      method:'GET',
+      url:`http://localhost:3000/app/users/${Id}`
+    });
+    console.log(userInfo.data.result);
+    return userInfo;
+  }
+  catch (err) {
+      logger.error(`App - getUserInfoKakao Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+  }
 }

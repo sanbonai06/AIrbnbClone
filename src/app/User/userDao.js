@@ -22,9 +22,9 @@ async function selectUserEmail(connection, email) {
 // userId 회원 조회
 async function selectUserId(connection, userId) {
   const selectUserIdQuery = `
-                 SELECT Users.user_id, Users.user_email, Users.user_name, Users.status, Reviews.text, Reviews.room_id 
-                 FROM Users, Reviews
-                 WHERE Users.user_id = ? and Reviews.user_id = Users.user_id;
+                 SELECT Users.user_id, Users.user_email, Users.user_name, Users.status 
+                 FROM Users
+                 WHERE Users.user_id = ?;
                  `;
   const [userRow] = await connection.query(selectUserIdQuery, userId);
   return userRow;
@@ -325,13 +325,23 @@ async function createEvaluation(connection, insertParams) {
   return createEvaluationRow;
 }
 
-async function createUserKakao(connection, email, name) {
+async function createUserKakao(connection, email, id, name) {
   const createUserKAkaoQuery = `
-  INSERT INTO Users(user_email, user_name, status)
-  VALUES (?, ?, 'user');
+  INSERT INTO Users(user_email, user_password, user_name, status)
+  VALUES (?, ?, ?,'user');
   `;
-  const createUserKakaoRow = await connection.query(createUserKAkaoQuery, [email, name]);
+  const createUserKakaoRow = await connection.query(createUserKAkaoQuery, [email, id, name]);
   return createUserKakaoRow;
+}
+
+async function selectKakaoUser(connection, email, password) {
+  const selectUserQuery = `
+  SELECT user_id, user_name, user_email, status
+  FROM Users
+  WHERE user_email = ? and user_password = ?;
+  `;
+  const [selectUserRow] = await connection.query(selectUserQuery, [email, password]);
+  return selectUserRow;
 }
 module.exports = {
   selectUser,
@@ -365,6 +375,7 @@ module.exports = {
   postRank,
   selectRank,
   createEvaluation,
-  createUserKakao
+  createUserKakao,
+  selectKakaoUser
 };
 

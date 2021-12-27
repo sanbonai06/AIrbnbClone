@@ -496,6 +496,26 @@ exports.kakaoLogin = async (token) => {
     }
 }   
 */
+exports.getKakaoCode = async (Id, Uri) => {
+    try{
+        const code = await axios({
+            method:'POST',
+           // url:`https://kauth.kakao.com/oauth/authorize?response_type=code&client_id={REST_API_KEY}&redirect_uri={REDIRECT_URI}`,
+           url: 'https://kauth.kakao.com/oauth/authorize',
+            data: qs.stringify({
+                response_type: 'code',
+                client_id: Id,
+                redirect_uri: Uri
+            })
+        });
+        return code;
+    }
+    catch (err) {
+        logger.error(`App - getCode Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+}
+
 exports.getToken = async (Id, Uri, code) => {
     try{
         const token = await axios({
@@ -512,8 +532,9 @@ exports.getToken = async (Id, Uri, code) => {
                 code: code
             })
         });
-        console.log(token.data.aceess_token);
-        return token;
+        console.log(token.data.access_token);
+        const accessToken = token.data.access_token;
+        return accessToken;
     }
     catch (err) {
         logger.error(`App - getToken Service error\n: ${err.message}`);
@@ -521,13 +542,13 @@ exports.getToken = async (Id, Uri, code) => {
     }
 }
 
-exports.createKakaoUser = async (email, name) => {
+exports.createKakaoUser = async (email, id, name) => {
     const connection = await pool.getConnection(async (conn) => conn);
     try{
         await connection.beginTransaction();
-        const createUserKakao = await userDao.createUserKakao(connection, email, name);
+        const createUserKakao = await userDao.createUserKakao(connection, email, id, name);
         connection.commit();
-        console.log(`${createUserKakao[0].insertId}님이 카카오회원으로 가입하셨습니다.`);
+        console.log(`${createUserKakao[0].insertId}번님이 카카오회원으로 가입하셨습니다.`);
     }
     catch (err) {
         connection.rollback();
@@ -537,4 +558,32 @@ exports.createKakaoUser = async (email, name) => {
     finally {
         connection.release();
     }
+}
+
+exports.loginKakaoUser = async (email, kakaoId) => {
+    try{
+        const connection = await pool.getConnection(async (conn) => conn);
+        const loginKakaoRow = await userDao.selectKakaoUser(connection, email, kakaoId);
+        if(loginKakaoRow.length < 1) {
+            return errResponse(baseResponse.SIGNUP_WRONG_KAKAOLOGIN);
+        }
+        console.log(`${loginKakaoRow[0].user_id}번 회원님이 카카오계정으로 로그인 했습니다.`);
+        let token = await jwt.sign(
+            {
+                userId: loginKakaoRow[0].user_id,
+                status: loginKakaoRow[0].status,
+            }, // 토큰의 내용(payload)
+            secret_config.jwtsecret, // 비밀키
+            {
+                expiresIn: "365d",
+                subject: "userInfo",
+            } // 유효 기간 365일
+        );
+        return response(baseResponse.SUCCESS, {'userId': loginKakaoRow[0].user_id, 'jwt': token});
+    }
+    catch(err) {
+        logger.error(`App - kakaoLogin Service error\n: ${err.message}`);
+        return errResponse(baseResponse.DB_ERROR);
+    }
+    
 }
